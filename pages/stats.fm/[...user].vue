@@ -76,7 +76,12 @@
       ? `${user.value.item.displayName}'s better stats.fm stats`
       : "User not found",
     meta: [
-      user.value ? { name: "description", content: `View ${user.value.item.displayName}'s weight based stats.fm stats!` } : {},
+      user.value
+        ? {
+            name: "description",
+            content: `View ${user.value.item.displayName}'s weight based stats.fm stats!`,
+          }
+        : {},
       user.value ? { name: "og:image", content: user.value?.item.image } : {},
       { name: "theme-color", content: "rgb(30 215 96)" },
     ],
@@ -210,15 +215,16 @@
         </button>
       </div>
     </div>
-    <div class="flex justify-center text-xs sm:text-lg mb-5 font-semibold text-dim mx-5">
+    <div
+      class="flex justify-center text-xs sm:text-lg mb-5 font-semibold text-dim mx-5"
+    >
       <p v-if="user">
         <a class="hover:text-white" :href="`${url}/${route.params.user}`">
           {{ user?.item.displayName }} </a
         >'s top {{ stats }}
-
         {{ rangeModes.find((r) => r.id === range)?.desc }}
         <span v-if="range !== rangeModes[3].id">
-          &nbsp;{{ rangeModes.find((r) => r.id === range)?.name }}
+          {{ rangeModes.find((r) => r.id === range)?.name }}
         </span>
       </p>
       <p v-else>This page doesn't exist</p>
