@@ -76,7 +76,7 @@
       ? `${user.value.item.displayName}'s better stats.fm stats`
       : "User not found",
     meta: [
-      user.value ? { name: "description", content: "My amazing site." } : {},
+      user.value ? { name: "description", content: `View ${user.value.item.displayName}'s weight based stats.fm stats!` } : {},
       user.value ? { name: "og:image", content: user.value?.item.image } : {},
       { name: "theme-color", content: "rgb(30 215 96)" },
     ],
