@@ -1,13 +1,14 @@
 <script setup lang="ts">
   type artists = {
+    id: number;
     name: string;
   }[];
 
   interface Track {
-    id: number;
     streams: number;
     playedMs: number;
     track: {
+      id: number;
       name: string;
       artists: artists;
       albums: {
@@ -20,6 +21,7 @@
     streams: number;
     playedMs: number;
     album: {
+      id: number;
       name: string;
       artists: artists;
       image: string;
@@ -30,6 +32,7 @@
     streams: number;
     playedMs: number;
     artist: {
+      id: number;
       name: string;
       image: string;
     };
@@ -63,40 +66,66 @@
   };
   console.log(route.params);
   const { data: user } = await useFetch<{ item: User }>(
-    `https://beta-api.stats.fm/api/v1/users/${route.params.user[0]}/`,
-    {
-      lazy: true,
-    }
+    `https://beta-api.stats.fm/api/v1/users/${route.params.user[0]}/`
   );
+
+  const url = "https://stats.fm";
+
   useHead({
-    title: `Better stats.fm stats`,
+    title: user.value
+      ? `${user.value.item.displayName}'s better stats.fm stats`
+      : "User not found",
+    meta: [
+      user.value ? { name: "description", content: "My amazing site." } : {},
+      user.value ? { name: "og:image", content: user.value?.item.image } : {},
+      { name: "theme-color", content: "rgb(30 215 96)" },
+    ],
+
     link: [{ rel: "icon", type: "image/x-icon", href: "/statsfm.webp" }],
   });
-  const { data: tracks } = await useFetch<{
+  const {
+    data: tracks,
+    execute: fetchTracks,
+    status: trackStatus,
+  } = await useFetch<{
     items: Track[];
   }>(
     `https://beta-api.stats.fm/api/v1/users/${route.params.user[0]}/top/tracks`,
     {
       query: { range },
       lazy: true,
+      server: false,
     }
   );
-  const { data: artists } = await useFetch<{
+  const {
+    data: artists,
+    execute: fetchArtists,
+    status: artistStatus,
+  } = await useFetch<{
     items: Artist[];
   }>(
     `https://beta-api.stats.fm/api/v1/users/${route.params.user[0]}/top/artists`,
     {
       query: { range },
       lazy: true,
+      server: false,
+      immediate: false,
     }
   );
-  const { data: albums } = await useFetch<{
+  const {
+    data: albums,
+    execute: fetchAlbums,
+    status: albumStatus,
+  } = await useFetch<{
     items: Album[];
   }>(`https://beta-api.stats.fm/api/v1/users/${route.params.user}/top/albums`, {
     query: { range },
     lazy: true,
+    server: false,
+    immediate: false,
   });
   function filterTracks() {
+    if (trackStatus.value == "idle") fetchTracks();
     return tracks.value?.items.sort((a, b) => {
       return (
         calculateCombinedScore(b.streams, b.playedMs) -
@@ -105,6 +134,7 @@
     });
   }
   function filterAlbums() {
+    if (albumStatus.value == "idle") fetchAlbums();
     return albums.value?.items.sort((a, b) => {
       return (
         calculateCombinedScore(b.streams, b.playedMs) -
@@ -113,6 +143,8 @@
     });
   }
   function filterArtists() {
+    if (artistStatus.value == "idle") fetchArtists();
+
     return artists.value?.items.sort((a: any, b: any) => {
       return (
         calculateCombinedScore(b.streams, b.playedMs) -
@@ -135,8 +167,11 @@
 
 <template>
   <div class="bg-statsfm-primary flex flex-col font-sans h-screen text-white">
-    <div class="flex items-center m-5 justify-center gap-5">
-      <div class="flex space-x-3 bg-statsfm-secondary p-2 rounded-xl">
+    <div
+      v-if="user"
+      class="flex lt-md:flex-col items-center m-5 justify-center gap-5"
+    >
+      <div class="flex sm:space-x-3 bg-statsfm-secondary p-2 rounded-xl">
         <button
           v-for="(tab, index) in statModes"
           :key="index"
@@ -146,20 +181,20 @@
             'bg-transparent text-white': stats !== tab.id,
           }"
           @click="setActiveStats(tab.id)"
-          class="px-4 py-1.5 text-nowrap hover:bg-statsfm-accent-secondary/3 transition-colors transition-400 border-none rounded-lg cursor-pointer focus:outline-none"
+          class="px-3 lg:px-4 py-1.5 text-nowrap hover:bg-statsfm-accent-secondary/3 transition-colors transition-400 border-none rounded-lg cursor-pointer focus:outline-none"
         >
           {{ tab.name }}
         </button>
       </div>
       <div class="flex items-center">
-        <a :href="`https://stats.fm/${route.params.user}`">
+        <a :href="`${url}/${route.params.user}`">
           <img
             :src="user?.item.image"
             alt="User Profile Picture"
             class="w-10 h-10 rounded-full object-cover"
         /></a>
       </div>
-      <div class="flex space-x-3 p-2 bg-statsfm-secondary rounded-xl">
+      <div class="flex sm:space-x-3 p-2 bg-statsfm-secondary rounded-xl">
         <button
           v-for="(tab, index) in rangeModes"
           :key="index"
@@ -169,45 +204,78 @@
             'bg-transparent text-white': range !== tab.id,
           }"
           @click="setActiveTab(tab.id)"
-          class="px-4 py-1.5 text-nowrap hover:bg-statsfm-accent-secondary/3 transition-colors transition-400 border-none rounded-lg cursor-pointer focus:outline-none"
+          class="px-3 lg:px-4 py-1.5 text-nowrap hover:bg-statsfm-accent-secondary/3 transition-colors transition-400 border-none rounded-lg cursor-pointer focus:outline-none"
         >
           {{ tab.name }}
         </button>
       </div>
     </div>
-    <div class="flex justify-center mb-5 font-semibold text-dim">
-      {{ user?.item.displayName }}'s top {{ stats }}
-      {{ rangeModes.find((r) => r.id === range)?.desc }}
-      <span v-if="range !== rangeModes[3].id">
-        &nbsp;{{ rangeModes.find((r) => r.id === range)?.name }}
-      </span>
+    <div class="flex justify-center text-xs sm:text-lg mb-5 font-semibold text-dim mx-5">
+      <p v-if="user">
+        <a class="hover:text-white" :href="`${url}/${route.params.user}`">
+          {{ user?.item.displayName }} </a
+        >'s top {{ stats }}
+
+        {{ rangeModes.find((r) => r.id === range)?.desc }}
+        <span v-if="range !== rangeModes[3].id">
+          &nbsp;{{ rangeModes.find((r) => r.id === range)?.name }}
+        </span>
+      </p>
+      <p v-else>This page doesn't exist</p>
     </div>
+
     <div
+      v-if="user"
       :class="{ 'overflow-scroll': stats !== statModes[0].id }"
-      class="flex flex-wrap mb-5 overflow-x-hidden snap-mandatory snap-y justify-center gap-4 max-w-6/9 mx-auto"
+      class="flex flex-wrap mb-5 overflow-x-hidden snap-mandatory snap-y justify-center gap-4 max-w-8/9 2xl:max-w-6/9 mx-auto"
     >
       <div class="h30 overflow-hidden" v-if="stats == statModes[0].id">
         being worked on
       </div>
       <div
-        v-if="stats == statModes[1].id"
-        v-for="(item, index) in filterTracks()"
+        v-if="stats == statModes[1].id && !tracks"
+        v-for="index in 30"
         :key="index"
         class="max-w-40 rounded-md snap-end"
       >
-        <img
-          :src="item.track.albums[0].image"
+        <div
           alt="Album Cover"
-          class="w-40 h-40 object-cover mb-4"
-        />
+          class="skeleton w-40 h-40 object-cover mb-4"
+        ></div>
         <div class="p-1">
-          <h2 class="text-sm font-semibold line-clamp-2">
-            {{ index + 1 }}. {{ item.track.name }}
-          </h2>
+          <h2 class="text-sm font-semibold line-clamp-2 h-4 skeleton mb-2"></h2>
+          <div class="h-8 skeleton"></div>
+        </div>
+      </div>
+      <div
+        v-if="stats == statModes[1].id"
+        v-for="(item, index) in filterTracks()"
+        :key="index"
+        class="max-w-30 md:max-w-40 rounded-md snap-end"
+      >
+        <a class="hover:text-white" :href="`${url}/track/${item.track.id}`">
+          <img
+            :src="item.track.albums[0].image"
+            alt="Album Cover"
+            class="w-30 h-30 md:(w-40 h-40) object-cover mb-4"
+          />
+        </a>
+        <div class="p-1">
+          <a class="hover:text-white" :href="`${url}/track/${item.track.id}`">
+            <h2 class="text-sm font-semibold line-clamp-2">
+              {{ index + 1 }}. {{ item.track.name }}
+            </h2>
+          </a>
 
           <p class="text-xs text-#a3a3a3">
             {{ item.streams }} streams • {{ formatTime(item.playedMs) }} •
-            {{ item.track.artists[0].name }} •
+            <a
+              class="hover:text-white"
+              :href="`${url}/artist/${item.track.artists[0].id}`"
+            >
+              {{ item.track.artists[0].name }}</a
+            >
+            •
             {{ calculateCombinedScore(item.streams, item.playedMs).toFixed(2) }}
             weight
           </p>
@@ -217,18 +285,20 @@
         v-if="stats == statModes[3].id"
         v-for="(item, index) in filterAlbums()"
         :key="index"
-        class="max-w-40 rounded-md snap-end"
+        class="max-w-30 md:max-w-40 rounded-md snap-end"
       >
-        <img
-          :src="item.album.image"
-          alt="Artist Image"
-          class="w-40 h-40 object-cover mb-4"
-        />
+        <a class="hover:text-white" :href="`${url}/album/${item.album.id}`">
+          <img
+            :src="item.album.image"
+            alt="Artist Image"
+            class="w-30 h-30 md:(w-40 h-40) object-cover mb-4"
+        /></a>
         <div class="p-1">
-          <h2 class="text-sm font-semibold line-clamp-2">
-            {{ index + 1 }}. {{ item.album.name }}
-          </h2>
-
+          <a class="hover:text-white" :href="`${url}/album/${item.album.id}`">
+            <h2 class="text-sm font-semibold line-clamp-2">
+              {{ index + 1 }}. {{ item.album.name }}
+            </h2>
+          </a>
           <p class="text-xs text-#a3a3a3">
             {{ item.streams }} streams • {{ formatTime(item.playedMs) }} •
             {{ calculateCombinedScore(item.streams, item.playedMs).toFixed(2) }}
@@ -238,25 +308,27 @@
       </div>
       <div
         v-if="stats == statModes[2].id"
-        v-for="(artist, index) in filterArtists()"
+        v-for="(item, index) in filterArtists()"
         :key="index"
-        class="max-w-40 rounded-md snap-end"
+        class="max-w-30 md:max-w-40 rounded-md snap-end"
       >
-        <img
-          :src="artist.artist.image"
-          alt="Artist Image"
-          class="w-40 h-40 object-cover mb-4"
-        />
+        <a class="hover:text-white" :href="`${url}/artist/${item.artist.id}`">
+          <img
+            :src="item.artist.image"
+            alt="Artist Image"
+            class="w-30 h-30 md:(w-40 h-40) object-cover mb-4"
+          />
+        </a>
         <div class="p-1">
-          <h2 class="text-sm font-semibold line-clamp-2">
-            {{ index + 1 }}. {{ artist.artist.name }}
-          </h2>
+          <a class="hover:text-white" :href="`${url}/artist/${item.artist.id}`">
+            <h2 class="text-sm font-semibold line-clamp-2">
+              {{ index + 1 }}. {{ item.artist.name }}
+            </h2></a
+          >
 
           <p class="text-xs text-dim">
-            {{ artist.streams }} streams • {{ formatTime(artist.playedMs) }} •
-            {{
-              calculateCombinedScore(artist.streams, artist.playedMs).toFixed(2)
-            }}
+            {{ item.streams }} streams • {{ formatTime(item.playedMs) }} •
+            {{ calculateCombinedScore(item.streams, item.playedMs).toFixed(2) }}
             weight
           </p>
         </div>
@@ -279,5 +351,22 @@
   ::-webkit-scrollbar-thumb {
     background: rgba(30, 215, 96, 0.1);
     border-radius: 5px;
+  }
+  .skeleton {
+    background: #eee;
+    background: linear-gradient(
+      110deg,
+      #ececec0e 8%,
+      #f5f5f50e 18%,
+      #ececec0e 33%
+    );
+    background-size: 200% 100%;
+    animation: 1.5s shine linear infinite;
+  }
+
+  @keyframes shine {
+    to {
+      background-position-x: -200%;
+    }
   }
 </style>

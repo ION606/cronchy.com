@@ -1,4 +1,8 @@
-import { defineConfig, presetWebFonts } from "unocss";
+import {
+  defineConfig,
+  transformerDirectives,
+  transformerVariantGroup,
+} from "unocss";
 
 export default defineConfig({
   theme: {
@@ -14,4 +18,5 @@ export default defineConfig({
       },
     },
   },
+  transformers: [transformerDirectives(), transformerVariantGroup()],
 });

@@ -2,6 +2,7 @@
 export default defineNuxtConfig({
   devtools: { enabled: true },
   css: [
+    "@/global.css",
     "@unocss/reset/normalize.css",
     "@unocss/reset/sanitize/sanitize.css",
     "@unocss/reset/sanitize/assets.css",
