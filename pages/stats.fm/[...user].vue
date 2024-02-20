@@ -63,7 +63,10 @@
   };
   console.log(route.params);
   const { data: user } = await useFetch<{ item: User }>(
-    `https://beta-api.stats.fm/api/v1/users/${route.params.user[0]}/`
+    `https://beta-api.stats.fm/api/v1/users/${route.params.user[0]}/`,
+    {
+      lazy: true,
+    }
   );
   useHead({
     title: `Better stats.fm stats`,
@@ -75,6 +78,7 @@
     `https://beta-api.stats.fm/api/v1/users/${route.params.user[0]}/top/tracks`,
     {
       query: { range },
+      lazy: true,
     }
   );
   const { data: artists } = await useFetch<{
@@ -83,12 +87,14 @@
     `https://beta-api.stats.fm/api/v1/users/${route.params.user[0]}/top/artists`,
     {
       query: { range },
+      lazy: true,
     }
   );
   const { data: albums } = await useFetch<{
     items: Album[];
   }>(`https://beta-api.stats.fm/api/v1/users/${route.params.user}/top/albums`, {
     query: { range },
+    lazy: true,
   });
   function filterTracks() {
     return tracks.value?.items.sort((a, b) => {
