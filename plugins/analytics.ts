@@ -11,4 +11,19 @@ export default defineNuxtPlugin(() => {
     },
     { global: true }
   );
+  addRouteMiddleware(
+    "google",
+    () => {
+      if (process.client) {
+        const gtag = document.createElement("script");
+        gtag.async = true;
+        gtag.src = "https://www.googletagmanager.com/gtag/js?id=G-XJVR7WE364";
+        document.head.appendChild(gtag);
+        const push = document.createElement("script");
+        push.innerHTML = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XJVR7WE364');`;
+        document.head.appendChild(push);
+      }
+    },
+    { global: true }
+  );
 });
