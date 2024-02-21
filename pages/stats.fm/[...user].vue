@@ -56,7 +56,7 @@
   ];
 
   const route = useRoute();
-  const range = ref(rangeModes[1].id);
+  const range = ref(rangeModes[2].id);
   const stats = ref(statModes[1].id);
   const setActiveTab = (newRange: string) => {
     range.value = newRange;
