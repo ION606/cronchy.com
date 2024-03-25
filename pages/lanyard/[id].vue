@@ -148,11 +148,11 @@
               <h1 class="font-semibold truncate h-5.2 leading-5">
                 {{ getActivityType(activity.type) }} {{ activity.name }}
               </h1>
-              <p v-if="activity.state" class="truncate h-5.2 leading-5">
-                {{ activity.state }}
-              </p>
               <p v-if="activity.details" class="truncate h-5.2 leading-5">
                 {{ activity.details }}
+              </p>
+              <p v-if="activity.state" class="truncate h-5.2 leading-5">
+                {{ activity.state }}
               </p>
               <div v-if="activity.timestamps" class="h-fit">
                 <div
