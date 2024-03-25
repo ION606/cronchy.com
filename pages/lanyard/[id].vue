@@ -1,28 +1,49 @@
 <script setup lang="ts">
-  import Lanyard, { type ActivityData, type Timestamps } from "~/src/lanyard";
-  const lanyard = ref<ActivityData>();
+  import Lanyard, {
+    type Activity,
+    type ActivityData,
+    type Timestamps,
+  } from "~/src/lanyard";
+  const activities = ref<Activity[]>();
   const route = useRoute();
   const currentTime = ref(Date.now());
 
-  let LanyardSocket: WebSocket;
+  let LanyardSocket: globalThis.Ref<WebSocket>;
   let timerInterval: NodeJS.Timeout;
   const updateTimer = () => {
     currentTime.value = Date.now();
   };
   onMounted(async () => {
-    LanyardSocket = await Lanyard(route.params.id as string, true);
+    LanyardSocket = await Lanyard(route.params.id as string);
 
-    LanyardSocket.addEventListener("message", ({ data }: { data: any }) => {
-      const { d: status } = JSON.parse(data);
-      lanyard.value = status;
+    LanyardSocket.value.addEventListener(
+      "message",
+      ({ data }: { data: any }) => {
+        const { d: status, op } = JSON.parse(data);
+        if (op === 0) activities.value = status.activities;
+      }
+    );
+
+    LanyardSocket.value.addEventListener("close", () => {
+      activities.value = [
+        {
+          id: "disconnected",
+          application_id: "disconnected",
+          created_at: 0,
+          buttons: [],
+          type: -1,
+          name: "disconnected",
+          state: "reload to reconnect",
+        },
+      ];
     });
 
-    timerInterval = setInterval(updateTimer, 1000);
+    timerInterval = setInterval(updateTimer, 250);
   });
 
-  // onBeforeUnmount(() => {
-  //   LanyardSocket.close();
-  // });
+  onBeforeUnmount(() => {
+    LanyardSocket.value.close();
+  });
 
   const ActivityType: { [key: number]: string } = {
     0: "Playing",
@@ -35,6 +56,7 @@
     return ActivityType[key] || "";
   }
   function getAssetImageUrl(applicationId: string, asset: string | undefined) {
+    if (applicationId === "disconnected") return "/disconnect-plug-icon.png";
     if (!asset) return `https://dcdn.dstn.to/app-icons/${applicationId}`;
     if (asset.startsWith("mp:external")) {
       const externalUrl = asset.replace("mp:", "");
@@ -69,7 +91,7 @@
   const getTime = computed(() => (timestamps: Timestamps): string => {
     const { start, end } = timestamps;
 
-    let elapsedTime = new Date(currentTime.value - start + 1000);
+    let elapsedTime = new Date(currentTime.value - start);
     let text = "elapsed";
     if (end) (elapsedTime = new Date(end - currentTime.value)), (text = "left");
     return `${formatTime(elapsedTime)} ${text}`;
@@ -108,11 +130,8 @@
   <main
     class="text-white bg-#171717 flex flex-col justify-center items-center h-screen bg-gradient-to-br from-#0d0822/5 to-#1a0a2a/10"
   >
-    <div
-      v-if="lanyard?.activities"
-      class="space-y-5 bg-primary rounded-md p-5 m-5"
-    >
-      <div v-for="activity in lanyard.activities" :key="activity.id">
+    <div v-if="activities" class="space-y-5 bg-primary rounded-md p-5 m-5">
+      <div v-for="activity in activities" :key="activity.id">
         <div class="text-gray-200 font-[poppins] items-center">
           <div class="flex items-center w-80vw max-w-100">
             <div class="size-25 relative">
