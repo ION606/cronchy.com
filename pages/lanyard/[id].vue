@@ -35,7 +35,7 @@
     return ActivityType[key] || "";
   }
   function getAssetImageUrl(applicationId: string, asset: string | undefined) {
-    if (!asset) return `https://dcdn.dstn.to/avatars/${applicationId}`;
+    if (!asset) return `https://dcdn.dstn.to/app-icons/${applicationId}`;
     if (asset.startsWith("mp:external")) {
       const externalUrl = asset.replace("mp:", "");
       const discordCdnUrl = `https://media.discordapp.net/${externalUrl}`;
@@ -71,7 +71,7 @@
 
     let elapsedTime = new Date(currentTime.value - start + 1000);
     let text = "elapsed";
-    if (end) (elapsedTime = new Date(end - currentTime.value)  ), (text = "left");
+    if (end) (elapsedTime = new Date(end - currentTime.value)), (text = "left");
     return `${formatTime(elapsedTime)} ${text}`;
   });
   const getTimeProgress = computed(() => (timestamps?: Timestamps) => {
@@ -120,7 +120,6 @@
                 svg="true"
                 width="100"
                 height="100"
-                v-if="activity.assets?.large_image"
                 :src="
                   getAssetImageUrl(
                     activity.application_id,
@@ -149,8 +148,12 @@
               <h1 class="font-semibold truncate h-5.2 leading-5">
                 {{ getActivityType(activity.type) }} {{ activity.name }}
               </h1>
-              <p v-if="activity.state" class="truncate h-5.2 leading-5">{{ activity.state }}</p>
-              <p v-if="activity.details" class="truncate h-5.2 leading-5">{{ activity.details }}</p>
+              <p v-if="activity.state" class="truncate h-5.2 leading-5">
+                {{ activity.state }}
+              </p>
+              <p v-if="activity.details" class="truncate h-5.2 leading-5">
+                {{ activity.details }}
+              </p>
               <div v-if="activity.timestamps" class="h-fit">
                 <div
                   v-if="activity.timestamps.start && activity.timestamps.end"
