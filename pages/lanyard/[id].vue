@@ -77,7 +77,7 @@
   const getTimeProgress = computed(() => (timestamps?: Timestamps) => {
     if (!timestamps) return null;
     const { start, end } = timestamps;
-    const elapsedTime = new Date(Date.now() - start);
+    const elapsedTime = new Date(currentTime.value - start);
     const endTime = new Date(end - start);
     const calc =
       Math.floor((elapsedTime.getTime() / endTime.getTime()) * 10000) / 100;
