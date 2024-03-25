@@ -104,6 +104,7 @@ export interface Activity {
   details?: string;
   assets?: Assets;
   application_id: string;
+  buttons: string[];
 }
 
 export interface Emoji {

@@ -2,12 +2,26 @@
   import Lanyard, { type ActivityData, type Timestamps } from "~/src/lanyard";
   const lanyard = ref<ActivityData>();
   const route = useRoute();
+  const currentTime = ref(Date.now());
+
+  let LanyardSocket: WebSocket;
+  let timerInterval: NodeJS.Timeout;
+  const updateTimer = () => {
+    currentTime.value = Date.now();
+  };
   onMounted(async () => {
-    const LanyardSocket = await Lanyard(route.params.id as string, true);
+    LanyardSocket = await Lanyard(route.params.id as string, true);
+
     LanyardSocket.addEventListener("message", ({ data }: { data: any }) => {
       const { d: status } = JSON.parse(data);
       lanyard.value = status;
     });
+
+    timerInterval = setInterval(updateTimer, 1000);
+  });
+
+  onBeforeUnmount(() => {
+    LanyardSocket.close();
   });
 
   const ActivityType: { [key: number]: string } = {
@@ -20,10 +34,11 @@
   function getActivityType(key: number): string {
     return ActivityType[key] || "";
   }
-  function getAssetImageUrl(applicationId: string, asset: string) {
-    if (asset.startsWith("mp:external/")) {
-      const externalUrl = asset.replace("mp:external/", "");
-      const discordCdnUrl = `https://media.discordapp.net/external/${externalUrl}`;
+  function getAssetImageUrl(applicationId: string, asset: string | undefined) {
+    if (!asset) return `https://dcdn.dstn.to/avatars/${applicationId}`;
+    if (asset.startsWith("mp:external")) {
+      const externalUrl = asset.replace("mp:", "");
+      const discordCdnUrl = `https://media.discordapp.net/${externalUrl}`;
       return discordCdnUrl;
     }
 
@@ -38,112 +53,139 @@
     return imageUrl;
   }
 
-  const currentTime = ref(Date.now());
-  const updateTimer = () => {
-    currentTime.value = Date.now();
-  };
-  let timerInterval: NodeJS.Timeout;
-
-  onMounted(() => {
-    timerInterval = setInterval(updateTimer, 1000);
-  });
-
   onUnmounted(() => {
     clearInterval(timerInterval);
   });
-  const getActivityTime = computed(() => (timestamps: Timestamps): string => {
-    const { start, end } = timestamps;
 
-    let elapsedTime = new Date(currentTime.value - start);
-    let text = "elapsed";
-    if (end) (elapsedTime = new Date(end - currentTime.value)), (text = "left");
-    const hours = elapsedTime.getUTCHours();
-    return `${hours ? hours.toString().padStart(2, "0") + ":" : ""}${elapsedTime
-      .getUTCMinutes()
-      .toString()
-      .padStart(2, "0")}:${elapsedTime
+  const formatTime = (time: Date) =>
+    `${
+      time.getUTCHours()
+        ? time.getUTCHours().toString().padStart(2, "0") + ":"
+        : ""
+    }${time.getUTCMinutes().toString().padStart(2, "0")}:${time
       .getUTCSeconds()
       .toString()
-      .padStart(2, "0")} ${text}`;
+      .padStart(2, "0")}`;
+  const getTime = computed(() => (timestamps: Timestamps): string => {
+    const { start, end } = timestamps;
+
+    let elapsedTime = new Date(currentTime.value - start + 1000);
+    let text = "elapsed";
+    if (end) (elapsedTime = new Date(end - currentTime.value)  ), (text = "left");
+    return `${formatTime(elapsedTime)} ${text}`;
   });
-
-  // const width = 100;
-  // const height = 100;
-  // const holeX = 50;
-  // const holeY = 30;
-  // const holeSize = 60;
-
-  // const holePath = `M ${holeX} ${holeY} L ${holeX + holeSize} ${holeY} L ${
-  //   holeX + holeSize
-  // } ${holeY + holeSize} L ${holeX} ${holeY + holeSize}  L ${holeX} ${holeY}`;
-
-  // // const path = `M 0 0 L 0 ${height} L ${width} ${height} L ${width} 0 L 0 0 ${holePath} Z`;
-
-  // const clipPath = `path('${path}')`;
+  const getTimeProgress = computed(() => (timestamps?: Timestamps) => {
+    if (!timestamps) return null;
+    const { start, end } = timestamps;
+    const elapsedTime = new Date(Date.now() - start);
+    const endTime = new Date(end - start);
+    const calc =
+      Math.floor((elapsedTime.getTime() / endTime.getTime()) * 10000) / 100;
+    return {
+      start: formatTime(
+        new Date(Math.min(elapsedTime.getTime(), endTime.getTime()))
+      ),
+      end: formatTime(endTime),
+      completion: Math.min(calc, 100),
+    };
+  });
+  const needsMask = (si: string | undefined) =>
+    si
+      ? `mask-image: radial-gradient(
+                    circle 20px at calc(100% - 12px) calc(100% - 12px),
+                    transparent 19px,
+                    #000 0
+                  );
+                  -webkit-mask-image: radial-gradient(
+                    circle 20px at calc(100% - 12px) calc(100% - 12px),
+                    transparent 19px,
+                    #000 0
+                  );`
+      : "";
 </script>
 
 <template>
   <main
     class="text-white bg-#171717 flex flex-col justify-center items-center h-screen bg-gradient-to-br from-#0d0822/5 to-#1a0a2a/10"
   >
-    <!-- {{ lanyard }} -->
     <div
       v-if="lanyard?.activities"
-      class="space-y-10 bg-statsfm-primary rounded-md p-5 m-5"
+      class="space-y-5 bg-primary rounded-md p-5 m-5"
     >
-      <div v-for="activity in lanyard.activities">
-        <div class="flex text-gray-200 font-sans items-center space-x-4">
-          <div class="size-25">
-            <NuxtImg
-              svg="true"
-              width="100"
-              height="100"
-              v-if="activity.assets?.large_image"
-              :src="
-                getAssetImageUrl(
-                  activity.application_id,
-                  activity.assets?.large_image ??
-                    activity.assets?.small_image ??
-                    ''
-                )
-              "
-              class="rounded-md"
-            >
-            </NuxtImg>
-            <svg width="0" height="0">
-              <defs>
-                <clipPath id="myClip">
-                  <circle cx="100" cy="100" r="20" />
-                </clipPath>
-              </defs>
-            </svg>
-            <!-- <div class="w-110% flex justify-end">
-              <div
-                class="bg-statsfm-primary -translate-y-6.4 size-8 flex justify-center items-center rounded-full"
+      <div v-for="activity in lanyard.activities" :key="activity.id">
+        <div class="text-gray-200 font-[poppins] items-center">
+          <div class="flex items-center w-80vw max-w-100">
+            <div class="size-25 relative">
+              <NuxtImg
+                svg="true"
+                width="100"
+                height="100"
+                v-if="activity.assets?.large_image"
+                :src="
+                  getAssetImageUrl(
+                    activity.application_id,
+                    activity.assets?.large_image ?? activity.assets?.small_image
+                  )
+                "
+                :style="needsMask(activity.assets?.small_image)"
+                class="rounded-md size-full object-cover"
               >
-                <NuxtImg
-                  width="25"
-                  height="25"
-                  v-if="activity.assets?.large_image"
-                  :src="
-                    getAssetImageUrl(
-                      activity.application_id,
-                      activity.assets?.small_image ?? ''
-                    )
-                  "
-                  class="size-6 rounded-full"
-                ></NuxtImg>
+              </NuxtImg>
+
+              <NuxtImg
+                width="25"
+                height="25"
+                v-if="activity.assets?.small_image"
+                :src="
+                  getAssetImageUrl(
+                    activity.application_id,
+                    activity.assets?.small_image
+                  )
+                "
+                class="size-8 rounded-full absolute -right-1 -bottom-1"
+              ></NuxtImg>
+            </div>
+            <div class="space-y-.2 ml-5 w-[calc(100%_-_7.50rem)] my-a">
+              <h1 class="font-semibold truncate h-5.2 leading-5">
+                {{ getActivityType(activity.type) }} {{ activity.name }}
+              </h1>
+              <p v-if="activity.state" class="truncate h-5.2 leading-5">{{ activity.state }}</p>
+              <p v-if="activity.details" class="truncate h-5.2 leading-5">{{ activity.details }}</p>
+              <div v-if="activity.timestamps" class="h-fit">
+                <div
+                  v-if="activity.timestamps.start && activity.timestamps.end"
+                >
+                  <div class="w-full rounded-md h-1 bg-secondary">
+                    <div
+                      :style="`width: ${
+                        getTimeProgress(activity.timestamps)?.completion
+                      }%`"
+                      class="h-full rounded-md bg-gray-200"
+                    ></div>
+                  </div>
+                  <div class="text-sm h-4.2 flex justify-between">
+                    <p>
+                      {{ getTimeProgress(activity.timestamps)?.start }}
+                    </p>
+                    <p>
+                      {{ getTimeProgress(activity.timestamps)?.end }}
+                    </p>
+                  </div>
+                </div>
+                <div v-else>
+                  <p class="truncate h-5.2 leading-5">
+                    {{ getTime(activity.timestamps) }}
+                  </p>
+                </div>
               </div>
-            </div> -->
+            </div>
           </div>
-          <div class="space-y-1">
-            <h1 class="font-semibold">
-              {{ getActivityType(activity.type) }} {{ activity.name }}
-            </h1>
-            <p class="">{{ activity.state }}</p>
-            <p class="">{{ activity.details }}</p>
-            <div v-if="activity.timestamps" class="time-progress">
-              <div class="time">{{ getActivityTime(activity.timestamps) }}</div>
+          <div v-if="activity.buttons && false" class="space-y-2 mt-4">
+            <div
+              v-for="button in activity.buttons"
+              class="bg-secondary text-nowrap text-dim px4 h-8 rounded-md min-w-20 flex justify-center items-center"
+            >
+              {{ button }}
             </div>
           </div>
         </div>
