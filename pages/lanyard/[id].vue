@@ -20,9 +20,9 @@
     timerInterval = setInterval(updateTimer, 1000);
   });
 
-  onBeforeUnmount(() => {
-    LanyardSocket.close();
-  });
+  // onBeforeUnmount(() => {
+  //   LanyardSocket.close();
+  // });
 
   const ActivityType: { [key: number]: string } = {
     0: "Playing",
