@@ -117,6 +117,7 @@
           <div class="flex items-center w-80vw max-w-100">
             <div class="size-25 relative">
               <NuxtImg
+                :title="activity.assets?.large_text"
                 svg="true"
                 width="100"
                 height="100"
@@ -132,6 +133,7 @@
               </NuxtImg>
 
               <NuxtImg
+                :title="activity.assets?.small_text"
                 width="25"
                 height="25"
                 v-if="activity.assets?.small_image"
@@ -145,13 +147,24 @@
               ></NuxtImg>
             </div>
             <div class="space-y-.2 ml-5 w-[calc(100%_-_7.50rem)] my-a">
-              <h1 class="font-semibold truncate h-5.2 leading-5">
+              <h1
+                class="font-semibold truncate h-5.2 leading-5"
+                :title="activity.name"
+              >
                 {{ getActivityType(activity.type) }} {{ activity.name }}
               </h1>
-              <p v-if="activity.details" class="truncate h-5.2 leading-5">
+              <p
+                v-if="activity.details"
+                :title="activity.details"
+                class="truncate h-5.2 leading-5"
+              >
                 {{ activity.details }}
               </p>
-              <p v-if="activity.state" class="truncate h-5.2 leading-5">
+              <p
+                v-if="activity.state"
+                :title="activity.state"
+                class="truncate h-5.2 leading-5"
+              >
                 {{ activity.state }}
               </p>
               <div v-if="activity.timestamps" class="h-fit">

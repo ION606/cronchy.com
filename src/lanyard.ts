@@ -2,7 +2,6 @@ const apiBase = "https://api.lanyard.rest/v1",
   webSocketBase = "wss://api.lanyard.rest/socket";
 
 export default async function Lanyard(userId: string, socket?: boolean) {
-  console.log(window);
   //   const supportsWebSocket = "WebSocket" in document || "MozWebSocket" in document;
 
   //   if (socket === true && supportsWebSocket === false)
