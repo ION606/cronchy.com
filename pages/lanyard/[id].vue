@@ -131,7 +131,10 @@
     class="text-white bg-#171717 flex flex-col justify-center items-center h-screen bg-gradient-to-br from-#0d0822/5 to-#1a0a2a/10"
   >
     <div v-if="activities" class="space-y-5 bg-primary rounded-md p-5 m-5">
-      <div v-for="activity in activities" :key="activity.id">
+      <div
+        v-for="activity in activities.filter((a) => a.type !== 4)"
+        :key="activity.id"
+      >
         <div class="text-gray-200 font-[poppins] items-center">
           <div class="flex items-center w-80vw max-w-100">
             <div class="size-25 relative">
