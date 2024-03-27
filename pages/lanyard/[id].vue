@@ -10,9 +10,6 @@
   const activities = ref<Activity[]>();
   let LanyardSocket: globalThis.Ref<WebSocket>;
   let timerInterval: NodeJS.Timeout;
-  const updateTimer = () => {
-    currentTime.value = Date.now();
-  };
   onMounted(async () => {
     const lanyard = await Lanyard(route.params.id as string);
 
@@ -23,10 +20,11 @@
       (newActivities) => (activities.value = newActivities)
     );
 
-    timerInterval = setInterval(updateTimer, 250);
+    timerInterval = setInterval(() => (currentTime.value = Date.now()), 500);
   });
 
   onBeforeUnmount(() => {
+    clearInterval(timerInterval);
     LanyardSocket.value.close();
   });
 
@@ -81,13 +79,14 @@
     if (end) (elapsedTime = new Date(end - currentTime.value)), (text = "left");
     return `${formatTime(elapsedTime)} ${text}`;
   });
-  const getTimeProgress = computed(() => (timestamps?: Timestamps) => {
+  const getTimeProgress = (timestamps?: Timestamps) => {
     if (!timestamps) return null;
     const { start, end } = timestamps;
     const elapsedTime = new Date(currentTime.value - start);
     const endTime = new Date(end - start);
-    const calc =
-      Math.floor((elapsedTime.getTime() / endTime.getTime()) * 10000) / 100;
+    const calc = ((elapsedTime.getTime() / endTime.getTime()) * 10000) / 100;
+
+    console.log(calc);
     return {
       start: formatTime(
         new Date(Math.min(elapsedTime.getTime(), endTime.getTime()))
@@ -95,7 +94,7 @@
       end: formatTime(endTime),
       completion: Math.min(calc, 100),
     };
-  });
+  };
   const needsMask = (si: string | undefined) =>
     si
       ? `mask-image: radial-gradient(
@@ -178,12 +177,12 @@
                 <div
                   v-if="activity.timestamps.start && activity.timestamps.end"
                 >
-                  <div class="w-full rounded-md h-1 bg-secondary">
+                  <div class="w-full rounded-md h-1 mt1 bg-secondary">
                     <div
                       :style="`width: ${
                         getTimeProgress(activity.timestamps)?.completion
                       }%`"
-                      class="h-full rounded-md bg-gray-200"
+                      class="h-full transition-width transition-ease-linear transition-width-500 rounded-md bg-gray-200"
                     ></div>
                   </div>
                   <div class="text-sm h-4.2 flex justify-between">
