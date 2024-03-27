@@ -1,9 +1,7 @@
 const apiBase = "https://api.lanyard.rest/v1",
   webSocketBase = "wss://api.lanyard.rest/socket";
 
-export default async function Lanyard(
-  userId: string
-): Promise<globalThis.Ref<WebSocket>> {
+export default async function Lanyard(userId: string) {
   //   const supportsWebSocket = "WebSocket" in document || "MozWebSocket" in document;
 
   //   if (socket === true && supportsWebSocket === false)
@@ -12,32 +10,46 @@ export default async function Lanyard(
   if (userId === undefined) throw new Error("Missing `userId` option.");
   // Use websocket if socket option is set to true.
   const socket = ref(new WebSocket(webSocketBase));
+  const activities = ref<Activity[]>();
 
   let key = "subscribe_to_id";
   if (typeof userId === "object") key = "subscribe_to_ids";
 
-  socket.value.addEventListener("open", () => {
-    // Subscribe to ID(s)
-    socket.value.send(
-      JSON.stringify({
-        op: 2,
-        d: {
-          [key]: userId,
-        },
-      })
-    );
+  function setupSocket() {
+    socket.value.addEventListener("message", ({ data }: { data: any }) => {
+      const { d: status, op } = JSON.parse(data);
+      if (op === 0) activities.value = status.activities;
+    });
+    socket.value.addEventListener("open", () => {
+      // Subscribe to ID(s)
+      socket.value.send(
+        JSON.stringify({
+          op: 2,
+          d: {
+            [key]: userId,
+          },
+        })
+      );
+      socket.value.addEventListener("close", () => {
+        socket.value = new WebSocket(webSocketBase);
+        setupSocket();
+      });
 
-    // Send heartbeat every 30 seconds
-    setInterval(() => {
+      // Send heartbeat every 30 seconds
+    });
+  }
+  setupSocket();
+
+  setInterval(() => {
+    if (socket.value.readyState)
       socket.value.send(
         JSON.stringify({
           op: 3,
         })
       );
-    }, 25000);
-  });
+  }, 25000);
 
-  return socket;
+  return { socket, activities };
 }
 export type Snowflake = `${bigint}`;
 export interface ActivityData {

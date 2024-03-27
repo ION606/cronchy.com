@@ -4,39 +4,24 @@
     type ActivityData,
     type Timestamps,
   } from "~/src/lanyard";
-  const activities = ref<Activity[]>();
   const route = useRoute();
   const currentTime = ref(Date.now());
 
+  const activities = ref<Activity[]>();
   let LanyardSocket: globalThis.Ref<WebSocket>;
   let timerInterval: NodeJS.Timeout;
   const updateTimer = () => {
     currentTime.value = Date.now();
   };
   onMounted(async () => {
-    LanyardSocket = await Lanyard(route.params.id as string);
+    const lanyard = await Lanyard(route.params.id as string);
 
-    LanyardSocket.value.addEventListener(
-      "message",
-      ({ data }: { data: any }) => {
-        const { d: status, op } = JSON.parse(data);
-        if (op === 0) activities.value = status.activities;
-      }
+    LanyardSocket = lanyard.socket;
+
+    watch(
+      lanyard.activities,
+      (newActivities) => (activities.value = newActivities)
     );
-
-    LanyardSocket.value.addEventListener("close", () => {
-      activities.value = [
-        {
-          id: "disconnected",
-          application_id: "disconnected",
-          created_at: 0,
-          buttons: [],
-          type: -1,
-          name: "disconnected",
-          state: "reload to reconnect",
-        },
-      ];
-    });
 
     timerInterval = setInterval(updateTimer, 250);
   });
