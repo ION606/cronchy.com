@@ -2,13 +2,7 @@ const apiBase = "https://api.lanyard.rest/v1",
   webSocketBase = "wss://api.lanyard.rest/socket";
 
 export default async function Lanyard(userId: string) {
-  //   const supportsWebSocket = "WebSocket" in document || "MozWebSocket" in document;
-
-  //   if (socket === true && supportsWebSocket === false)
-  //     throw new Error("Browser doesn't support WebSocket connections.");
-  // Throw error if userId is missing.
   if (userId === undefined) throw new Error("Missing `userId` option.");
-  // Use websocket if socket option is set to true.
   const socket = ref(new WebSocket(webSocketBase));
   const activities = ref<Activity[]>();
 
@@ -35,7 +29,6 @@ export default async function Lanyard(userId: string) {
         setupSocket();
       });
 
-      // Send heartbeat every 30 seconds
     });
   }
   setupSocket();

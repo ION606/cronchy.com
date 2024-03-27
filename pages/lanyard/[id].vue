@@ -120,8 +120,11 @@
         :key="activity.id"
       >
         <div class="text-gray-200 font-[poppins] items-center">
-          <div class="flex items-center w-80vw max-w-100">
-            <div class="size-25 relative">
+          <h1 class="text-sm uppercase font-bold mb-1 sm:hidden truncate h-5.2 leading-5" :title="activity.name">
+            {{ getActivityType(activity.type) }} {{ activity.name }}
+          </h1>
+          <div class="flex items-center lt-sm:text-sm w-80vw max-w-100">
+            <div class="size-20 sm:size-25 relative">
               <NuxtImg
                 :title="activity.assets?.large_text"
                 svg="true"
@@ -134,7 +137,7 @@
                   )
                 "
                 :style="needsMask(activity.assets?.small_image)"
-                class="rounded-md size-full object-cover"
+                class="rounded-md size-20 sm:size-25 object-cover"
               >
               </NuxtImg>
 
@@ -152,9 +155,9 @@
                 class="size-8 rounded-full absolute -right-1 -bottom-1"
               ></NuxtImg>
             </div>
-            <div class="space-y-.2 ml-5 w-[calc(100%_-_7.50rem)] my-a">
+            <div class="space-y-.2 ml2.5 sm:ml5 w-[calc(100%_-_5.6rem)] sm:w-[calc(100%_-_7.50rem)] my-a">
               <h1
-                class="font-semibold truncate h-5.2 leading-5"
+                class="font-semibold lt-sm:hidden truncate h-5.2 leading-5"
                 :title="activity.name"
               >
                 {{ getActivityType(activity.type) }} {{ activity.name }}
@@ -185,7 +188,7 @@
                       class="h-full transition-width transition-ease-linear transition-width-500 rounded-md bg-gray-200"
                     ></div>
                   </div>
-                  <div class="text-sm h-4.2 flex justify-between">
+                  <div class="text-sm space-x-1 h-4.2 flex justify-between">
                     <p>
                       {{ getTimeProgress(activity.timestamps)?.start }}
                     </p>
