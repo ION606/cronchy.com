@@ -40,7 +40,7 @@
   }
   function getAssetImageUrl(applicationId: string, asset: string | undefined) {
     if (applicationId === "disconnected") return "/disconnect-plug-icon.png";
-    if (!asset) return `https://dcdn.dstn.to/app-icons/${applicationId}`;
+    if (!asset) return `https://dcdn.dstn.to/app-icons/${applicationId}?size=600`;
     if (asset.startsWith("mp:external")) {
       const externalUrl = asset.replace("mp:", "");
       const discordCdnUrl = `https://media.discordapp.net/${externalUrl}`;
@@ -54,7 +54,7 @@
     }
 
     const baseUrl = "https://cdn.discordapp.com/app-assets/";
-    const imageUrl = `${baseUrl}${applicationId}/${asset}.png`;
+    const imageUrl = `${baseUrl}${applicationId}/${asset}.png?size=600`;
     return imageUrl;
   }
 
