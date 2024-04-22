@@ -4,7 +4,7 @@ const apiBase = "https://api.lanyard.rest/v1",
 export default async function Lanyard(userId: string) {
   if (userId === undefined) throw new Error("Missing `userId` option.");
   const socket = ref(new WebSocket(webSocketBase));
-  const activities = ref<Activity[]>();
+  const lanyardData = ref<ActivityData>();
 
   let key = "subscribe_to_id";
   if (typeof userId === "object") key = "subscribe_to_ids";
@@ -12,7 +12,7 @@ export default async function Lanyard(userId: string) {
   function setupSocket() {
     socket.value.addEventListener("message", ({ data }: { data: any }) => {
       const { d: status, op } = JSON.parse(data);
-      if (op === 0) activities.value = status.activities;
+      if (op === 0) lanyardData.value = status;
     });
     socket.value.addEventListener("open", () => {
       // Subscribe to ID(s)
@@ -28,7 +28,6 @@ export default async function Lanyard(userId: string) {
         socket.value = new WebSocket(webSocketBase);
         setupSocket();
       });
-
     });
   }
   setupSocket();
@@ -40,9 +39,9 @@ export default async function Lanyard(userId: string) {
           op: 3,
         })
       );
-  }, 25000);
+  }, 30000);
 
-  return { socket, activities };
+  return { socket, data: lanyardData };
 }
 export type Snowflake = `${bigint}`;
 export interface ActivityData {
