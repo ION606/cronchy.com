@@ -28,7 +28,6 @@
   let LanyardSocket: globalThis.Ref<WebSocket>;
   let timerInterval: NodeJS.Timeout;
 
-  console.log(profile);
   const showUserCard = useCookie("showUserCard", {
     default: () => true,
   });
