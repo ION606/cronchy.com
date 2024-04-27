@@ -206,7 +206,7 @@
             font-size="20"
             fill="white"
           >
-            {{ data.discord_user.display_name ?? data.discord_user.username }}
+            {{ data.discord_user.global_name ?? data.discord_user.username }}
           </text>
           <text
             x="155"
