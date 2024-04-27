@@ -2,29 +2,26 @@
   import Lanyard, {
     type Activity,
     type ActivityData,
+    type Profile,
     type Timestamps,
   } from "~/src/lanyard";
   const route = useRoute();
-  const id = route.params.id as string
+  const id = route.params.id as string;
   const currentTime = ref(Date.now());
   const data = ref<ActivityData>();
   const activities = ref<Activity[]>();
-  await (
-    await fetch(
-      `https://api.lanyard.rest/v1/users/${id}`
-    )
-  )
+  await (await fetch(`https://api.lanyard.rest/v1/users/${id}`))
     .json()
     .then((d: { data: ActivityData }) => {
       if (!d.data) return;
       data.value = d.data;
       activities.value = d.data.activities.filter((a) => a.type !== 4);
     });
-  const { data: profile } = await useFetch(
-    `https://dcdn.dstn.to/profile/${id}`, {
-      server: true
-    }
-  );
+  const { data: profile } = await useFetch<{
+    user: Profile;
+  }>(`https://dcdn.dstn.to/profile/${id}`, {
+    server: true,
+  });
   let LanyardSocket: globalThis.Ref<WebSocket>;
   let timerInterval: NodeJS.Timeout;
 
@@ -76,7 +73,8 @@
   });
   function getAssetImageUrl(applicationId: string, asset: string | undefined) {
     if (applicationId === "disconnected") return "/disconnect-plug-icon.png";
-    if (!asset) return `https://dcdn.dstn.to/app-icons/${applicationId}?size=600`;
+    if (!asset)
+      return `https://dcdn.dstn.to/app-icons/${applicationId}?size=600`;
     if (asset.startsWith("mp:external")) {
       const externalUrl = asset.replace("mp:", "");
       const discordCdnUrl = `https://media.discordapp.net/${externalUrl}`;

@@ -88,6 +88,24 @@ export interface DiscordUser {
   avatar: string | null;
 }
 
+export interface Profile {
+  id: Snowflake;
+  username: string;
+  global_name: string | null;
+  avatar: string | null;
+  avatar_decoration_data: {
+    asset: string;
+    sku_id: bigint;
+  } | null;
+  discriminator: string;
+  public_flags: number;
+  flags: number;
+  banner: string;
+  banner_color: string;
+  accent_color: number;
+  bio: string;
+}
+
 export interface Activity {
   type: number;
   state: string;
