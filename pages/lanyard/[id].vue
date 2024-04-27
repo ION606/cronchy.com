@@ -2,6 +2,7 @@
   import Lanyard, {
     type Activity,
     type ActivityData,
+    type Emoji,
     type Profile,
     type Timestamps,
   } from "~/src/lanyard";
@@ -57,6 +58,7 @@
     2: "Listening to",
     3: "Watching",
     5: "Competing in",
+    6: "Right now, I'm -",
   };
   function getActivityType(key: number): string {
     return ActivityType[key] || "";
@@ -71,8 +73,16 @@
     }
     return `https://cdn.discordapp.com/${avi}`;
   });
-  function getAssetImageUrl(applicationId: string, asset: string | undefined) {
-    if (applicationId === "disconnected") return "/disconnect-plug-icon.png";
+  function getAssetImageUrl(
+    applicationId: string,
+    asset: string | Emoji | undefined
+  ) {
+    console.log(asset);
+    if (asset && typeof asset !== "string")
+      return `https://cdn.discordapp.com/emojis/${asset.id}.${
+        asset.animated ? "gif" : "webp"
+      }?quality=lossless `;
+
     if (!asset)
       return `https://dcdn.dstn.to/app-icons/${applicationId}?size=600`;
     if (asset.startsWith("mp:external")) {
@@ -266,7 +276,8 @@
                     getAssetImageUrl(
                       activity.application_id,
                       activity.assets?.large_image ??
-                        activity.assets?.small_image
+                        activity.assets?.small_image ??
+                        activity.emoji
                     )
                   "
                   :style="needsMask(activity.assets?.small_image)"
@@ -295,7 +306,8 @@
                   class="font-semibold lt-sm:hidden truncate h-5.2 leading-5"
                   :title="activity.name"
                 >
-                  {{ getActivityType(activity.type) }} {{ activity.name }}
+                  {{ getActivityType(activity.type) }}
+                  {{ activity.type == 6 ? null : activity.name }}
                 </h1>
                 <p
                   v-if="activity.details"
@@ -305,7 +317,7 @@
                   {{ activity.details }}
                 </p>
                 <p
-                  v-if="activity.state"
+                  v-if="activity.type !== 6 && activity.state"
                   :title="activity.state"
                   class="truncate h-5.2 leading-5"
                 >
