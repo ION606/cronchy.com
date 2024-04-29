@@ -73,34 +73,32 @@
     }
     return `https://cdn.discordapp.com/${avi}`;
   });
-  function getAssetImageUrl(
-    applicationId: string,
-    asset: string | Emoji | undefined
-  ) {
-    console.log(asset);
-    if (asset && typeof asset !== "string")
-      return `https://cdn.discordapp.com/emojis/${asset.id}.${
-        asset.animated ? "gif" : "webp"
-      }?quality=lossless `;
+  const getAssetImageUrl = computed(
+    () => (applicationId: string, asset: string | Emoji | undefined) => {
+      if (asset && typeof asset !== "string")
+        return `https://cdn.discordapp.com/emojis/${asset.id}.${
+          asset.animated ? "gif" : "webp"
+        }?quality=lossless `;
 
-    if (!asset)
-      return `https://dcdn.dstn.to/app-icons/${applicationId}?size=600`;
-    if (asset.startsWith("mp:external")) {
-      const externalUrl = asset.replace("mp:", "");
-      const discordCdnUrl = `https://media.discordapp.net/${externalUrl}`;
-      return discordCdnUrl;
+      if (!asset)
+        return `https://dcdn.dstn.to/app-icons/${applicationId}?size=600`;
+      if (asset.startsWith("mp:external")) {
+        const externalUrl = asset.replace("mp:", "");
+        const discordCdnUrl = `https://media.discordapp.net/${externalUrl}`;
+        return discordCdnUrl;
+      }
+
+      if (asset.startsWith("spotify:")) {
+        const externalUrl = asset.replace("spotify:", "");
+        const discordCdnUrl = `https://i.scdn.co/image/${externalUrl}`;
+        return discordCdnUrl;
+      }
+
+      const baseUrl = "https://cdn.discordapp.com/app-assets/";
+      const imageUrl = `${baseUrl}${applicationId}/${asset}.png?size=600`;
+      return imageUrl;
     }
-
-    if (asset.startsWith("spotify:")) {
-      const externalUrl = asset.replace("spotify:", "");
-      const discordCdnUrl = `https://i.scdn.co/image/${externalUrl}`;
-      return discordCdnUrl;
-    }
-
-    const baseUrl = "https://cdn.discordapp.com/app-assets/";
-    const imageUrl = `${baseUrl}${applicationId}/${asset}.png?size=600`;
-    return imageUrl;
-  }
+  );
 
   onUnmounted(() => {
     clearInterval(timerInterval);
@@ -129,8 +127,8 @@
   });
   const getTimeProgress = (timestamps?: Timestamps) => {
     if (!timestamps) return null;
-    const { start, end } = timestamps;
-
+    let { start, end } = timestamps;
+    if (currentTime.value <= start) start = currentTime.value;
     const elapsedTime = new Date(currentTime.value - start);
     const endTime = new Date(end - start);
     const calc = ((elapsedTime.getTime() / endTime.getTime()) * 10000) / 100;
@@ -142,9 +140,10 @@
       completion: Math.min(calc, 100),
     };
   };
-  const needsMask = (si: string | undefined) =>
-    si
-      ? `mask-image: radial-gradient(
+  const needsMask = computed(
+    () => (si: string | undefined) =>
+      si
+        ? `mask-image: radial-gradient(
                     circle 20px at calc(100% - 12px) calc(100% - 12px),
                     transparent 19px,
                     #000 0
@@ -154,7 +153,8 @@
                     transparent 19px,
                     #000 0
                   )`
-      : "";
+        : ""
+  );
 </script>
 
 <template>
