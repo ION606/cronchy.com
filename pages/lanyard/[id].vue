@@ -273,7 +273,6 @@
       </div>
       <div v-if="activities?.length" class="space-y-5 p5 bg-primary rounded-md">
         <div v-for="activity in activities" :key="activity.id">
-          {{ activity }}
           <div class="text-gray-200 font-[poppins] items-center">
             <h1
               class="text-sm uppercase font-bold mb-1 sm:hidden truncate h-5.2 leading-5"
