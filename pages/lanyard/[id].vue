@@ -73,32 +73,47 @@
     }
     return `https://cdn.discordapp.com/${avi}`;
   });
-  const getAssetImageUrl = computed(
-    () => (applicationId: string, asset: string | Emoji | undefined) => {
-      if (asset && typeof asset !== "string")
-        return `https://cdn.discordapp.com/emojis/${asset.id}.${
-          asset.animated ? "gif" : "webp"
-        }?quality=lossless `;
 
-      if (!asset)
-        return `https://dcdn.dstn.to/app-icons/${applicationId}?size=600`;
-      if (asset.startsWith("mp:external")) {
-        const externalUrl = asset.replace("mp:", "");
-        const discordCdnUrl = `https://media.discordapp.net/${externalUrl}`;
-        return discordCdnUrl;
-      }
+  const hangText: { [key: string]: string } = {
+    eating: "Grubbin",
+    gaming: "GAMING",
+    chilling: "Chilling",
+    focusing: "In the zone",
+    brb: "Gonna BRB",
+    "in-transit": "Wandering IRL",
+    watching: "Watchin' stuff",
+  };
 
-      if (asset.startsWith("spotify:")) {
-        const externalUrl = asset.replace("spotify:", "");
-        const discordCdnUrl = `https://i.scdn.co/image/${externalUrl}`;
-        return discordCdnUrl;
-      }
-
-      const baseUrl = "https://cdn.discordapp.com/app-assets/";
-      const imageUrl = `${baseUrl}${applicationId}/${asset}.png?size=600`;
-      return imageUrl;
+  const getAssetImageUrl = (
+    applicationId: string | number,
+    asset: string | Emoji | undefined
+  ) => {
+    if (asset && typeof asset !== "string")
+      return `https://cdn.discordapp.com/emojis/${asset.id}.${
+        asset.animated ? "gif" : "webp"
+      }?quality=lossless `;
+    if (applicationId === 6) {
+      return `/discord/hang/${asset}.svg`;
     }
-  );
+
+    if (!asset)
+      return `https://dcdn.dstn.to/app-icons/${applicationId}?size=600`;
+    if (asset.startsWith("mp:external")) {
+      const externalUrl = asset.replace("mp:", "");
+      const discordCdnUrl = `https://media.discordapp.net/${externalUrl}`;
+      return discordCdnUrl;
+    }
+
+    if (asset.startsWith("spotify:")) {
+      const externalUrl = asset.replace("spotify:", "");
+      const discordCdnUrl = `https://i.scdn.co/image/${externalUrl}`;
+      return discordCdnUrl;
+    }
+
+    const baseUrl = "https://cdn.discordapp.com/app-assets/";
+    const imageUrl = `${baseUrl}${applicationId}/${asset}.png?size=600`;
+    return imageUrl;
+  };
 
   onUnmounted(() => {
     clearInterval(timerInterval);
@@ -258,6 +273,7 @@
       </div>
       <div v-if="activities?.length" class="space-y-5 p5 bg-primary rounded-md">
         <div v-for="activity in activities" :key="activity.id">
+          {{ activity }}
           <div class="text-gray-200 font-[poppins] items-center">
             <h1
               class="text-sm uppercase font-bold mb-1 sm:hidden truncate h-5.2 leading-5"
@@ -274,10 +290,11 @@
                   height="100"
                   :src="
                     getAssetImageUrl(
-                      activity.application_id,
+                      activity.application_id ?? activity.type,
                       activity.assets?.large_image ??
                         activity.assets?.small_image ??
-                        activity.emoji
+                        activity.emoji ??
+                        activity.state
                     )
                   "
                   :style="needsMask(activity.assets?.small_image)"
@@ -317,11 +334,18 @@
                   {{ activity.details }}
                 </p>
                 <p
-                  v-if="activity.type !== 6 && activity.state"
+                  v-if="
+                    activity.state &&
+                    (activity.type !== 6 || activity.state !== 'custom')
+                  "
                   :title="activity.state"
                   class="truncate h-5.2 leading-5"
                 >
-                  {{ activity.state }}
+                  {{
+                    activity.type == 6
+                      ? hangText[activity.state]
+                      : activity.state
+                  }}
                 </p>
                 <div v-if="activity.timestamps" class="h-fit">
                   <div
