@@ -64,9 +64,8 @@
   const setActiveStats = (newStats: string) => {
     stats.value = newStats;
   };
-  console.log(route.params);
   const { data: user } = await useFetch<{ item: User }>(
-    `https://beta-api.stats.fm/api/v1/users/${route.params.user[0]}/`
+    `https://api.stats.fm/api/v1/users/${route.params.user[0]}/`
   );
 
   const url = "https://stats.fm";
@@ -95,7 +94,7 @@
   } = await useFetch<{
     items: Track[];
   }>(
-    `https://beta-api.stats.fm/api/v1/users/${route.params.user[0]}/top/tracks`,
+    `https://api.stats.fm/api/v1/users/${route.params.user[0]}/top/tracks`,
     {
       query: { range },
       lazy: true,
@@ -109,7 +108,7 @@
   } = await useFetch<{
     items: Artist[];
   }>(
-    `https://beta-api.stats.fm/api/v1/users/${route.params.user[0]}/top/artists`,
+    `https://api.stats.fm/api/v1/users/${route.params.user[0]}/top/artists`,
     {
       query: { range },
       lazy: true,
@@ -123,7 +122,7 @@
     status: albumStatus,
   } = await useFetch<{
     items: Album[];
-  }>(`https://beta-api.stats.fm/api/v1/users/${route.params.user}/top/albums`, {
+  }>(`https://api.stats.fm/api/v1/users/${route.params.user}/top/albums`, {
     query: { range },
     lazy: true,
     server: false,
@@ -233,7 +232,7 @@
     <div
       v-if="user"
       :class="{ 'overflow-scroll': stats !== statModes[0].id }"
-      class="flex flex-wrap mb-5 overflow-x-hidden snap-mandatory snap-y justify-center gap-4 max-w-8/9 2xl:max-w-6/9 mx-auto"
+      class="flex w-full h-fit flex-wrap mb-5 overflow-x-hidden snap-mandatory snap-y justify-center gap-4 max-w-8/9 2xl:max-w-6/9 mx-auto"
     >
       <div class="h30 overflow-hidden" v-if="stats == statModes[0].id">
         being worked on
@@ -245,7 +244,6 @@
         class="max-w-40 rounded-md snap-end"
       >
         <div
-          alt="Album Cover"
           class="skeleton w-40 h-40 object-cover mb-4"
         ></div>
         <div class="p-1">
@@ -262,7 +260,7 @@
         <a class="hover:text-white" :href="`${url}/track/${item.track.id}`">
           <img
             :src="item.track.albums[0].image"
-            alt="Album Cover"
+            :alt="item.track.albums[0].name"
             class="w-30 h-30 md:(w-40 h-40) object-cover mb-4"
           />
         </a>
@@ -296,7 +294,7 @@
         <a class="hover:text-white" :href="`${url}/album/${item.album.id}`">
           <img
             :src="item.album.image"
-            alt="Artist Image"
+            :alt="item.album.name"
             class="w-30 h-30 md:(w-40 h-40) object-cover mb-4"
         /></a>
         <div class="p-1">
@@ -321,7 +319,7 @@
         <a class="hover:text-white" :href="`${url}/artist/${item.artist.id}`">
           <img
             :src="item.artist.image"
-            alt="Artist Image"
+            :alt="item.artist.name"
             class="w-30 h-30 md:(w-40 h-40) object-cover mb-4"
           />
         </a>
