@@ -73,6 +73,7 @@
 </template>
 
 <style>
+  @import url("https://fonts.cdnfonts.com/css/impact");
   :root {
     --primary: #6a5674;
     cursor: none;
@@ -95,7 +96,7 @@
   }
 
   h2 {
-    font: 900 1.5rem "myriad pro", impact, helvetica, sans-serif;
+    font: 900 1.5rem impact;
     color: var(--primary);
     user-select: none;
   }
