@@ -15,17 +15,21 @@
       main.value.style.opacity = 1;
     }, 800);
     setTimeout(() => {
-      document.body.onmousemove = (event) => {
-        const { clientX, clientY } = event;
-        console.log(clientX, clientY);
+      document.body.onpointermove = (e) => move(e.clientX, e.clientY);
+      document.body.ontouchmove = (e) => {
+        const touch = e.touches[0] || e.changedTouches[0];
+        move(touch.clientX, touch.clientY);
+      };
+      const move = (x: number, y: number) => {
+        console.log(x, y);
 
         if (
-          clientX > window.innerWidth / 2 - radius &&
-          clientX < window.innerWidth / 2 + radius &&
-          clientY > window.innerHeight / 2 - radius &&
-          clientY < window.innerHeight / 2 + radius
+          x > window.innerWidth / 2 - radius &&
+          x < window.innerWidth / 2 + radius &&
+          y > window.innerHeight / 2 - radius &&
+          y < window.innerHeight / 2 + radius
         )
-          return small(clientX, clientY), center();
+          return small(x, y), center();
 
         cursorSmall.value.style.animation = "";
         cursorSmall.value.style.opacity = 0;
@@ -45,8 +49,8 @@
           }
         );
 
-        lastMouseX = clientX;
-        lastMouseY = clientY;
+        lastMouseX = x;
+        lastMouseY = y;
 
         moved.value = true;
       };
@@ -63,7 +67,7 @@
           top: `50dvh`,
         },
         {
-          duration: 1000,
+          duration: 500,
           fill: "forwards",
         }
       );
