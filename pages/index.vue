@@ -46,12 +46,13 @@
 
     function center() {
       scale = 300;
+      
       cursor.value.animate(
         {
           height: `${scale}px`,
           width: `${scale}px`,
-          left: `50vw`,
-          top: `50vh`,
+          left: `50dvw`,
+          top: `50dvh`,
         },
         {
           duration: 1000,
@@ -103,9 +104,9 @@
 
   #cursor {
     position: absolute;
-    width: calc(100vw + 100vh);
-    height: calc(100vw + 100vh);
-    top: 50vh;
+    width: calc(100dvw + 100dvh);
+    height: calc(100dvw + 100dvh);
+    top: 50dvh;
     left: 50%;
     transform: translate(-50%, -50%);
     background-color: black;
