@@ -1,9 +1,11 @@
 <script setup lang="ts">
   const moved = ref(false);
   const cursor = ref();
+  const cursorSmall = ref();
   const main = ref();
 
   onMounted(async () => {
+    let cursorSmallShown = false;
     let lastMouseX = -1;
     let lastMouseY = -1;
     let scale = 300;
@@ -13,17 +15,23 @@
       main.value.style.opacity = 1;
     }, 800);
     setTimeout(() => {
-      document.body.onpointermove = (event) => {
+      document.body.onmousemove = (event) => {
         const { clientX, clientY } = event;
         console.log(clientX, clientY);
+
         if (
           clientX > window.innerWidth / 2 - radius &&
           clientX < window.innerWidth / 2 + radius &&
           clientY > window.innerHeight / 2 - radius &&
           clientY < window.innerHeight / 2 + radius
         )
-          return center();
+          return small(clientX, clientY), center();
+
+        cursorSmall.value.style.animation = "";
+        cursorSmall.value.style.opacity = 0;
+        cursorSmallShown = false;
         scale = 70;
+
         cursor.value.animate(
           {
             height: `${scale}px`,
@@ -46,7 +54,7 @@
 
     function center() {
       scale = 300;
-      
+
       cursor.value.animate(
         {
           height: `${scale}px`,
@@ -60,14 +68,37 @@
         }
       );
     }
+    function small(x: number, y: number) {
+      cursorSmall.value.animate(
+        {
+          left: `${x}px`,
+          top: `${y}px`,
+        },
+        {
+          duration: 500,
+          fill: "forwards",
+        }
+      );
+      //TODO: fix animation
+      cursorSmall.value.style.opacity = 0.8;
+      if (!cursorSmallShown) {
+        setTimeout(
+          () =>
+            (cursorSmall.value.style.animation =
+              "spin infinite 200s linear, blink infinite 10s linear"),
+          500
+        );
+      }
+    }
   });
 </script>
 <template>
-  <div class="grain absolute h-screen"></div>
+  <div class="grain absolute h-screen pointer-events-none"></div>
+  <div ref="cursorSmall" id="cursorSmall" class="text-4xl">⋆</div>
   <div ref="cursor" id="cursor"></div>
   <main
     ref="main"
-    class="flex justify-center items-center h-100dvh opacity-0 transition-opacity-500"
+    class="flex justify-center items-center h-100dvh opacity-0 transition-opacity-500 select-none"
   >
     <h2>W.I.P</h2>
   </main>
@@ -99,13 +130,43 @@
   h2 {
     font: 900 1.5rem impact;
     color: var(--primary);
-    user-select: none;
+    /* user-select: none; */
   }
 
+  #cursorSmall {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    color: var(--primary);
+    filter: blur(1px);
+    z-index: -3;
+    opacity: 0;
+    line-height: 0px;
+    transition: opacity 300ms;
+  }
+  @keyframes spin {
+    from {
+      transform: translate(-50%, -50%) rotate(0deg);
+    }
+    to {
+      transform: translate(-50%, -50%) rotate(360deg);
+    }
+  }
+  @keyframes blink {
+    25% {
+      opacity: 0.75;
+    }
+    50% {
+      opacity: 0.5;
+    }
+    75% {
+      opacity: 0.8;
+    }
+  }
   #cursor {
     position: absolute;
-    width: calc(100dvw + 100dvh);
-    height: calc(100dvw + 100dvh);
+    width: calc(90dvw + 90dvh);
+    height: calc(90dvw + 90dvh);
     top: 50dvh;
     left: 50%;
     transform: translate(-50%, -50%);
