@@ -79,6 +79,7 @@
   }
 
   body {
+    overflow: hidden;
     background: linear-gradient(
       45deg,
       rgba(107, 86, 116, 0.78),
