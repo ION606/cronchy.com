@@ -93,36 +93,30 @@
     status: trackStatus,
   } = await useFetch<{
     items: Track[];
-  }>(
-    `https://api.stats.fm/api/v1/users/${route.params.user[0]}/top/tracks`,
-    {
-      query: { range },
-      lazy: true,
-      server: false,
-    }
-  );
+  }>(`https://api.stats.fm/api/v1/users/${route.params.user[0]}/top/tracks`, {
+    query: { range },
+    lazy: true,
+    server: false,
+  });
   const {
     data: artists,
     execute: fetchArtists,
     status: artistStatus,
   } = await useFetch<{
     items: Artist[];
-  }>(
-    `https://api.stats.fm/api/v1/users/${route.params.user[0]}/top/artists`,
-    {
-      query: { range },
-      lazy: true,
-      server: false,
-      immediate: false,
-    }
-  );
+  }>(`https://api.stats.fm/api/v1/users/${route.params.user[0]}/top/artists`, {
+    query: { range },
+    lazy: true,
+    server: false,
+    immediate: false,
+  });
   const {
     data: albums,
     execute: fetchAlbums,
     status: albumStatus,
   } = await useFetch<{
     items: Album[];
-  }>(`https://api.stats.fm/api/v1/users/${route.params.user}/top/albums`, {
+  }>(`https://api.stats.fm/api/v1/users/${route.params.user[0]}/top/albums`, {
     query: { range },
     lazy: true,
     server: false,
@@ -243,9 +237,7 @@
         :key="index"
         class="max-w-40 rounded-md snap-end"
       >
-        <div
-          class="skeleton w-40 h-40 object-cover mb-4"
-        ></div>
+        <div class="skeleton w-40 h-40 object-cover mb-4"></div>
         <div class="p-1">
           <h2 class="text-sm font-semibold line-clamp-2 h-4 skeleton mb-2"></h2>
           <div class="h-8 skeleton"></div>
@@ -275,9 +267,9 @@
             {{ item.streams }} streams • {{ formatTime(item.playedMs) }} •
             <a
               class="hover:text-white"
-              :href="`${url}/artist/${item.track.artists[0].id}`"
+              :href="`${url}/artist/${item.track.artists[0]?.id}`"
             >
-              {{ item.track.artists[0].name }}</a
+              {{ item.track.artists[0]?.name ?? "NONAME" }}</a
             >
             •
             {{ calculateCombinedScore(item.streams, item.playedMs).toFixed(2) }}
@@ -349,6 +341,11 @@
   ::-webkit-scrollbar-track {
     background: rgb(24, 24, 28);
     border-radius: 5px;
+  }
+
+  h2,
+  p {
+    color: var(--primary);
   }
 
   /* Handle */
