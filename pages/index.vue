@@ -120,7 +120,7 @@
               borderRadius: "50%",
             },
             {
-              duration: 1500,
+              duration: 1000,
               fill: "forwards",
             }
           );
@@ -143,7 +143,7 @@
             borderRadius: e.radius,
           },
           {
-            duration: 500,
+            duration: 1000,
             fill: "forwards",
           }
         );
