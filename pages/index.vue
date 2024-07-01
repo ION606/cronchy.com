@@ -127,7 +127,7 @@
 
         moved.value = true;
       };
-    }, 2000);
+    }, 1500);
 
     function snap(e: HoverSnapEl) {
       if (!e.size) e.size = `${Math.max(e.rect.width, e.rect.height) + 100}px`;
