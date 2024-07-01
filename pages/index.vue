@@ -41,7 +41,7 @@
       if (main.value) {
         main.value.style.opacity = "1";
       }
-    }, 800);
+    }, 300);
 
     updateRects();
     setInterval(() => {
@@ -357,8 +357,8 @@
 
   #cursor {
     position: absolute;
-    width: calc(90vw + 90vw);
-    height: calc(90vh + 90vh);
+    width: calc(100vw + 100vh);
+    height: calc(100vw + 100vh);
     top: 50vh;
     left: 50%;
     transform: translate(-50%, -50%);
