@@ -15,6 +15,8 @@
     size?: string;
     distance?: number;
     radius?: string;
+    x?: string;
+    y?: string;
   };
 
   function toggleTheme() {
@@ -97,8 +99,13 @@
         }
 
         if (cursorSmall.value) {
+          gsap.to(cursorSmall.value, {
+            opacity: 0,
+            duration: 0.5,
+          });
+          cursorSmall.value.style.top = `${y}px`;
+          cursorSmall.value.style.left = `${x}px`;
           cursorSmall.value.style.animation = "spin infinite 200s linear";
-          cursorSmall.value.style.opacity = "0";
         }
         cursorSmallShown = false;
         size = 70;
@@ -120,13 +127,20 @@
 
     function snap(e: HoverSnapEl) {
       if (!e.size) e.size = `${Math.max(e.rect.width, e.rect.height) + 100}px`;
-
+      let pos: { x: number | undefined; y: number | undefined } = {
+        x: undefined,
+        y: undefined,
+      };
+      if (e.x?.endsWith("%"))
+        pos.x = window.innerWidth * (parseInt(e.x.replace("%", "")) * 0.01);
+      if (e.y?.endsWith("%"))
+        pos.y = window.innerHeight * (parseInt(e.y.replace("%", "")) * 0.01);
       if (cursor.value) {
         gsap.to(cursor.value, {
           height: e.size,
           width: e.size,
-          left: e.rect.x + e.rect.width / 2,
-          top: e.rect.y + e.rect.height / 2,
+          left: pos.x ?? e.rect.x + e.rect.width / 2,
+          top: pos.y ?? e.rect.y + e.rect.height / 2,
           borderRadius: e.radius,
           duration: 0.5,
         });
@@ -149,12 +163,10 @@
         });
         cursorSmall.value.style.opacity = "0.8";
         if (!cursorSmallShown) {
-          setTimeout(() => {
-            if (cursorSmall.value) {
-              cursorSmall.value.style.animation =
-                "spin infinite 200s linear, blink infinite 5s linear";
-            }
-          }, 500);
+          if (cursorSmall.value) {
+            cursorSmall.value.style.animation =
+              "spin infinite 200s linear, blink infinite 5s linear";
+          }
         }
       }
     }
@@ -167,6 +179,8 @@
         size: el.getAttribute("hs-size") ?? undefined,
         distance: Number(el.getAttribute("hs-dist")) ?? undefined,
         radius: el.getAttribute("hs-br") ?? "50%",
+        x: el.getAttribute("hs-x") ?? undefined,
+        y: el.getAttribute("hs-y") ?? undefined,
       };
     }
 
@@ -188,7 +202,11 @@
 <template>
   <div class="grain fixed pointer-events-none"></div>
 
-  <div ref="cursorSmall" id="cursorSmall" class="text-4xl pointer-events-none select-none">
+  <div
+    ref="cursorSmall"
+    id="cursorSmall"
+    class="text-4xl pointer-events-none select-none"
+  >
     ⋆
   </div>
   <div class="fixed w-100% h-100% z--1 pointer-events-none">
@@ -203,7 +221,7 @@
       hs-br="30%"
       hs-dist="32"
       @click="toggleTheme()"
-      class="hover color absolute right-10 top-5 my-5 transition-color-500"
+      class="hover color absolute right-10 top-5 my-5 transition-color-500 select-none"
     >
       THEME
     </h2>
@@ -219,7 +237,7 @@
       <h2 class="hover">Element</h2>
     </div>
     <h2 class="hover">CURSOR SCALES BASED ON ELEMENT SIZE</h2>
-    <h2 hs-size="calc(150vw + 150vh)" hs-br="0" class="hover">
+    <h2 hs-size="calc(100vw + 100vh)" hs-y="50%" hs-br="0" class="hover">
       ELEMENTS CAN MODIFY THE CURSOR IN NUMEROUS WAYS
     </h2>
   </main>
@@ -253,12 +271,12 @@
   .color {
     transition: background 0.5s, color 0.5s;
     color: var(--primary);
+    background: var(--opposite-other);
+    background-clip: text;
   }
 
   .color:hover {
-    background: var(--opposite-other);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: transparent;
   }
 
   ::selection {
@@ -310,7 +328,6 @@
     z-index: 50;
     opacity: 0;
     line-height: 0px;
-    transition: opacity 300ms;
   }
 
   @keyframes spin {
