@@ -76,13 +76,13 @@
           let centerX = rect.x + rect.width / 2;
           let centerY = rect.y + window.scrollY + rect.height / 2;
           let d = getDistance(x, y, centerX, centerY);
-          const radius = distance || 80;
+          const radius = distance || 40;
 
           if (
-            x > centerX - radius &&
-            x < centerX + radius &&
-            y > centerY - radius &&
-            y < centerY + radius &&
+            x > centerX - radius - rect.width / 2 &&
+            x < centerX + radius + rect.width / 2 &&
+            y > centerY - radius - rect.height &&
+            y < centerY + radius + rect.height &&
             d < closestDistance
           ) {
             closestDistance = d;
@@ -97,7 +97,7 @@
         }
 
         cursorSmall.value.style.animation = "spin infinite 200s linear";
-        cursorSmall.value.style.opacity = 0;
+        cursorSmall.value.style.opacity = "0";
         cursorSmallShown = false;
         size = 70;
 
@@ -105,7 +105,7 @@
           {
             height: `${size}px`,
             width: `${size}px`,
-            left: `${x}px`,
+            left: `${x - window.scrollX}px`,
             top: `${y - window.scrollY}px`,
             borderRadius: "50%",
           },
@@ -144,7 +144,7 @@
     function small(x: number, y: number) {
       cursorSmall.value.animate(
         {
-          left: `${x}px`,
+          left: `${x - window.scrollX}px`,
           top: `${y - window.scrollY}px`,
         },
         {
@@ -203,10 +203,6 @@
       hs-br="30%"
       hs-dist="32"
       @click="toggleTheme()"
-      :class="{
-        'text-black hover:text-white': userTheme === 'light',
-        dark: userTheme === 'dark',
-      }"
       class="hover color absolute right-10 top-5 py-5 transition-color-500"
     >
       THEME
@@ -232,23 +228,21 @@
 <style>
   @import url("https://fonts.cdnfonts.com/css/impact");
   :root {
-    --primary: #714b79;
+    --primary: #523258;
     --opposite-other: var(--opposite-dark);
-    --opposite-light: linear-gradient(45deg, rgb(17, 0, 13), rgb(18, 0, 22));
     --opposite: var(--opposite-light);
-    --bg-color: white;
+
+    --opposite-light: linear-gradient(45deg, rgb(17, 0, 13), rgb(18, 0, 22));
     --opposite-dark: linear-gradient(
       45deg,
-      rgba(129, 89, 146, 0.78),
-      rgba(180, 119, 197, 0.78)
+      rgba(129, 89, 146),
+      rgba(180, 119, 197)
     );
-    --bg: linear-gradient(
-      45deg,
-      rgba(166, 124, 184, 0.78),
-      rgba(234, 182, 248, 0.78)
-    );
+
+    --bg-color: black;
+    --bg: linear-gradient(45deg, rgba(166, 124, 184), rgba(234, 182, 248));
     cursor: none;
-    transition: background 0.5s, color 0.5s;
+    transition: background 1.5s, color 1.5s;
   }
   :root.dark {
     --primary: #d7aceb;
@@ -273,7 +267,7 @@
   }
 
   body {
-    transition: background 0.5s, background-color 0.5s;
+    transition: background 5.5s, background-color 5.5s;
     background: var(--bg);
     background-color: var(--bg-color);
   }
@@ -306,7 +300,6 @@
       font-size: 1.5rem;
     }
   }
- 
 
   #cursorSmall {
     position: absolute;
@@ -317,7 +310,7 @@
     z-index: -3;
     opacity: 0;
     line-height: 0px;
-    transition: opacity 300ms, color 0.5s;
+    transition: opacity 300ms;
   }
   @keyframes spin {
     from {
@@ -350,5 +343,6 @@
     overflow: hidden;
     filter: blur(10px);
     z-index: -5;
+    transition: background 1.5s;
   }
 </style>
