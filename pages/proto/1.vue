@@ -1,7 +1,4 @@
 <script setup lang="ts">
-  import { onMounted, ref } from "vue";
-  import { gsap } from "gsap";
-
   const moved = ref(false);
   const cursor = ref<HTMLDivElement | null>(null);
   const cursorSmall = ref<HTMLDivElement | null>(null);
@@ -42,7 +39,7 @@
 
     setTimeout(() => {
       if (main.value) {
-        gsap.to(main.value, { opacity: 1, duration: 0.5 });
+        main.value.style.opacity = "1";
       }
     }, 300);
 
@@ -54,7 +51,16 @@
     setTimeout(() => {
       document.body.onscroll = () => {
         if (cursor.value) {
-          gsap.to(cursor.value, { height: size, width: size, duration: 0.5 });
+          cursor.value.animate(
+            {
+              height: `${size}px`,
+              width: `${size}px`,
+            },
+            {
+              duration: 500,
+              fill: "forwards",
+            }
+          );
         }
       };
 
@@ -104,14 +110,19 @@
         size = 70;
 
         if (cursor.value) {
-          gsap.to(cursor.value, {
-            height: size,
-            width: size,
-            left: x,
-            top: y,
-            borderRadius: "50%",
-            duration: 0.5,
-          });
+          cursor.value.animate(
+            {
+              height: `${size}px`,
+              width: `${size}px`,
+              left: `${x - window.scrollX}px`,
+              top: `${y - window.scrollY}px`,
+              borderRadius: "50%",
+            },
+            {
+              duration: 1000,
+              fill: "forwards",
+            }
+          );
         }
 
         moved.value = true;
@@ -122,14 +133,19 @@
       if (!e.size) e.size = `${Math.max(e.rect.width, e.rect.height) + 100}px`;
 
       if (cursor.value) {
-        gsap.to(cursor.value, {
-          height: e.size,
-          width: e.size,
-          left: e.rect.x + e.rect.width / 2,
-          top: e.rect.y + e.rect.height / 2,
-          borderRadius: e.radius,
-          duration: 0.5,
-        });
+        cursor.value.animate(
+          {
+            height: e.size,
+            width: e.size,
+            left: `${e.rect.x + e.rect.width / 2}px`,
+            top: `${e.rect.y + e.rect.height / 2}px`,
+            borderRadius: e.radius,
+          },
+          {
+            duration: 1000,
+            fill: "forwards",
+          }
+        );
       }
     }
 
@@ -142,11 +158,16 @@
 
     function small(x: number, y: number) {
       if (cursorSmall.value) {
-        gsap.to(cursorSmall.value, {
-          left: x,
-          top: y,
-          duration: 0.5,
-        });
+        cursorSmall.value.animate(
+          {
+            left: `${x - window.scrollX}px`,
+            top: `${y - window.scrollY}px`,
+          },
+          {
+            duration: 500,
+            fill: "forwards",
+          }
+        );
         cursorSmall.value.style.opacity = "0.8";
         if (!cursorSmallShown) {
           setTimeout(() => {
@@ -188,10 +209,8 @@
 <template>
   <div class="grain fixed pointer-events-none"></div>
 
-  <div ref="cursorSmall" id="cursorSmall" class="text-4xl pointer-events-none select-none">
-    ⋆
-  </div>
   <div class="fixed w-100% h-100% z--1 pointer-events-none">
+    <div ref="cursorSmall" id="cursorSmall" class="text-4xl z-50">⋆</div>
     <div ref="cursor" id="cursor"></div>
   </div>
   <main
@@ -203,7 +222,7 @@
       hs-br="30%"
       hs-dist="32"
       @click="toggleTheme()"
-      class="hover color absolute right-10 top-5 my-5 transition-color-500"
+      class="hover color absolute right-10 top-5 py-5 transition-color-500"
     >
       THEME
     </h2>
@@ -229,17 +248,19 @@
   @import url("https://fonts.cdnfonts.com/css/impact");
 
   :root {
-    --primary: #d7aceb;
+    --primary: #714b79;
     --opposite-other: var(--opposite-dark);
     --opposite: var(--opposite-light);
-    --opposite-light: linear-gradient(45deg, rgba(7, 0, 8), rgba(11, 0, 13));
-    --bg-light: linear-gradient(45deg, rgba(129, 89, 146), rgba(180, 119, 197));
-    --opposite-dark: var(--bg-light);
+    --opposite-light: linear-gradient(45deg, rgb(17, 0, 13), rgb(18, 0, 22));
+    --opposite-dark: linear-gradient(
+      45deg,
+      rgba(129, 89, 146),
+      rgba(180, 119, 197)
+    );
     --bg-color: black;
+    --bg: linear-gradient(45deg, rgba(166, 124, 184), rgba(234, 182, 248));
     cursor: none;
     transition: background 1.5s, color 1.5s;
-
-    --bg: var(--bg-light);
   }
 
   :root.dark {
@@ -247,7 +268,7 @@
     --opposite: var(--opposite-dark);
     --opposite-other: var(--opposite-light);
     --bg-color: black;
-    --bg: var(--opposite-light);
+    --bg: linear-gradient(45deg, rgba(10, 0, 8, 0.78), rgba(12, 0, 15, 0.78));
   }
 
   .color {
@@ -307,7 +328,7 @@
     border-radius: 50%;
     color: var(--primary);
     filter: blur(1px);
-    z-index: 50;
+    z-index: -3;
     opacity: 0;
     line-height: 0px;
     transition: opacity 300ms;

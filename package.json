@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@unocss/reset": "^0.58.9",
+    "gsap": "^3.12.5",
     "ws": "^8.17.0"
   }
 }
