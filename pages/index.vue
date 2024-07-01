@@ -1,11 +1,12 @@
 <script setup lang="ts">
   const moved = ref(false);
-  const cursor = ref();
-  const cursorSmall = ref();
-  const main = ref();
+  const cursor = ref<HTMLDivElement | null>(null);
+  const cursorSmall = ref<HTMLDivElement | null>(null);
+  const main = ref<HTMLDivElement | null>(null);
   const userTheme = useCookie<"dark" | "light">("user-theme", {
     watch: true,
   });
+
   let width = 0;
   type HoverSnapEl = {
     rect: DOMRect;
@@ -17,14 +18,15 @@
   function toggleTheme() {
     userTheme.value === "dark" ? setTheme("light") : setTheme("dark");
   }
+
   function setTheme(theme: "dark" | "light") {
     userTheme.value = theme;
     document.documentElement.className = theme;
   }
+
   onMounted(async () => {
     setTheme(userTheme.value);
-    // const initUserTheme = this.getMediaPreference();
-    // document.setTheme(initUserTheme);
+
     let rects: HoverSnapEl[] = [];
     let cursorSmallShown = false;
     let lastMouseX = -1;
@@ -35,8 +37,11 @@
     const loadInterval = setInterval(() => {
       load();
     }, 0);
+
     setTimeout(() => {
-      main.value.style.opacity = 1;
+      if (main.value) {
+        main.value.style.opacity = "1";
+      }
     }, 800);
 
     updateRects();
@@ -45,26 +50,28 @@
     }, 1000);
 
     setTimeout(() => {
-      document.body.onscroll = (e) => {
-        cursor.value.animate(
-          {
-            height: `${size}px`,
-            width: `${size}px`,
-          },
-          {
-            duration: 500,
-            fill: "forwards",
-          }
-        );
+      document.body.onscroll = () => {
+        if (cursor.value) {
+          cursor.value.animate(
+            {
+              height: `${size}px`,
+              width: `${size}px`,
+            },
+            {
+              duration: 500,
+              fill: "forwards",
+            }
+          );
+        }
       };
+
       document.body.onmousemove = (e) => move(e.pageX, e.pageY);
       document.body.ontouchmove = (e) => {
         const touch = e.touches[0] || e.changedTouches[0];
         move(touch.pageX, touch.pageY);
       };
-      const move = (x: number, y: number) => {
-        console.log(lastMouseY, window.scrollY);
 
+      const move = (x: number, y: number) => {
         clearInterval(loadInterval);
         lastMouseX = x;
         lastMouseY = y;
@@ -73,9 +80,9 @@
 
         for (let e of rects) {
           const { rect, distance } = e;
-          let centerX = rect.x + rect.width / 2;
-          let centerY = rect.y + window.scrollY + rect.height / 2;
-          let d = getDistance(x, y, centerX, centerY);
+          const centerX = rect.x + rect.width / 2;
+          const centerY = rect.y + window.scrollY + rect.height / 2;
+          const d = getDistance(x, y, centerX, centerY);
           const radius = distance || 40;
 
           if (
@@ -96,24 +103,28 @@
           return;
         }
 
-        cursorSmall.value.style.animation = "spin infinite 200s linear";
-        cursorSmall.value.style.opacity = "0";
+        if (cursorSmall.value) {
+          cursorSmall.value.style.animation = "spin infinite 200s linear";
+          cursorSmall.value.style.opacity = "0";
+        }
         cursorSmallShown = false;
         size = 70;
 
-        cursor.value.animate(
-          {
-            height: `${size}px`,
-            width: `${size}px`,
-            left: `${x - window.scrollX}px`,
-            top: `${y - window.scrollY}px`,
-            borderRadius: "50%",
-          },
-          {
-            duration: 1500,
-            fill: "forwards",
-          }
-        );
+        if (cursor.value) {
+          cursor.value.animate(
+            {
+              height: `${size}px`,
+              width: `${size}px`,
+              left: `${x - window.scrollX}px`,
+              top: `${y - window.scrollY}px`,
+              borderRadius: "50%",
+            },
+            {
+              duration: 1500,
+              fill: "forwards",
+            }
+          );
+        }
 
         moved.value = true;
       };
@@ -122,49 +133,56 @@
     function snap(e: HoverSnapEl) {
       if (!e.size) e.size = `${Math.max(e.rect.width, e.rect.height) + 100}px`;
 
-      cursor.value.animate(
-        {
-          height: e.size,
-          width: e.size,
-          left: `${e.rect.x + e.rect.width / 2}px`,
-          top: `${e.rect.y + e.rect.height / 2}px`,
-          borderRadius: e.radius,
-        },
-        {
-          duration: 500,
-          fill: "forwards",
-        }
-      );
-    }
-    function load() {
-      const loadFocus = document.getElementsByClassName("load-focus")[0];
-
-      snap(getHSEl(loadFocus));
-    }
-    function small(x: number, y: number) {
-      cursorSmall.value.animate(
-        {
-          left: `${x - window.scrollX}px`,
-          top: `${y - window.scrollY}px`,
-        },
-        {
-          duration: 500,
-          fill: "forwards",
-        }
-      );
-      //TODO: fix animation
-      cursorSmall.value.style.opacity = 0.8;
-      if (!cursorSmallShown) {
-        setTimeout(
-          () =>
-            (cursorSmall.value.style.animation =
-              "spin infinite 200s linear, blink infinite 5s linear"),
-          500
+      if (cursor.value) {
+        cursor.value.animate(
+          {
+            height: e.size,
+            width: e.size,
+            left: `${e.rect.x + e.rect.width / 2}px`,
+            top: `${e.rect.y + e.rect.height / 2}px`,
+            borderRadius: e.radius,
+          },
+          {
+            duration: 500,
+            fill: "forwards",
+          }
         );
       }
     }
 
+    function load() {
+      const loadFocus = document.getElementsByClassName("load-focus")[0];
+      if (loadFocus) {
+        snap(getHSEl(loadFocus));
+      }
+    }
+
+    function small(x: number, y: number) {
+      if (cursorSmall.value) {
+        cursorSmall.value.animate(
+          {
+            left: `${x - window.scrollX}px`,
+            top: `${y - window.scrollY}px`,
+          },
+          {
+            duration: 500,
+            fill: "forwards",
+          }
+        );
+        cursorSmall.value.style.opacity = "0.8";
+        if (!cursorSmallShown) {
+          setTimeout(() => {
+            if (cursorSmall.value) {
+              cursorSmall.value.style.animation =
+                "spin infinite 200s linear, blink infinite 5s linear";
+            }
+          }, 500);
+        }
+      }
+    }
+
     window.addEventListener("scroll", updateRects);
+
     function getHSEl(el: Element): HoverSnapEl {
       return {
         rect: el.getBoundingClientRect(),
@@ -173,8 +191,8 @@
         radius: el.getAttribute("hs-br") ?? "50%",
       };
     }
+
     function updateRects() {
-      // Force reflow to get updated rects
       const hovers = document.getElementsByClassName("hover");
       let newRects: HoverSnapEl[] = [];
       for (let hover of hovers) {
@@ -182,11 +200,13 @@
       }
       rects = newRects;
     }
+
     function getDistance(x1: number, y1: number, x2: number, y2: number) {
       return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
     }
   });
 </script>
+
 <template>
   <div class="grain fixed pointer-events-none"></div>
 
@@ -227,23 +247,23 @@
 
 <style>
   @import url("https://fonts.cdnfonts.com/css/impact");
+
   :root {
-    --primary: #523258;
+    --primary: #714b79;
     --opposite-other: var(--opposite-dark);
     --opposite: var(--opposite-light);
-
     --opposite-light: linear-gradient(45deg, rgb(17, 0, 13), rgb(18, 0, 22));
     --opposite-dark: linear-gradient(
       45deg,
       rgba(129, 89, 146),
       rgba(180, 119, 197)
     );
-
     --bg-color: black;
     --bg: linear-gradient(45deg, rgba(166, 124, 184), rgba(234, 182, 248));
     cursor: none;
     transition: background 1.5s, color 1.5s;
   }
+
   :root.dark {
     --primary: #d7aceb;
     --opposite: var(--opposite-dark);
@@ -251,14 +271,16 @@
     --bg-color: black;
     --bg: linear-gradient(45deg, rgba(10, 0, 8, 0.78), rgba(12, 0, 15, 0.78));
   }
+
   .color {
     transition: background 0.5s, color 0.5s;
     color: var(--primary);
-    &:hover {
-      background: var(--opposite-other);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
+  }
+
+  .color:hover {
+    background: var(--opposite-other);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
   ::selection {
@@ -285,8 +307,8 @@
     transition: color 0.5s;
     font-family: impact;
     color: var(--primary);
-    /* user-select: none; */
   }
+
   h2 {
     font-size: 2rem;
   }
@@ -312,6 +334,7 @@
     line-height: 0px;
     transition: opacity 300ms;
   }
+
   @keyframes spin {
     from {
       transform: translate(-50%, -50%) rotate(0deg);
@@ -320,6 +343,7 @@
       transform: translate(-50%, -50%) rotate(360deg);
     }
   }
+
   @keyframes blink {
     25% {
       opacity: 0.75;
@@ -331,6 +355,7 @@
       opacity: 0.8;
     }
   }
+
   #cursor {
     position: absolute;
     width: calc(90vw + 90vw);
