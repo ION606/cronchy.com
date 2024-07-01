@@ -3,6 +3,9 @@
   const cursor = ref();
   const cursorSmall = ref();
   const main = ref();
+  const userTheme = useCookie<"dark" | "light">("user-theme", {
+    watch: true,
+  });
   let width = 0;
   type HoverSnapEl = {
     rect: DOMRect;
@@ -11,7 +14,15 @@
     radius?: string;
   };
 
+  function toggleTheme() {
+    userTheme.value === "dark" ? setTheme("light") : setTheme("dark");
+  }
+  function setTheme(theme: "dark" | "light") {
+    userTheme.value = theme;
+    document.documentElement.className = theme;
+  }
   onMounted(async () => {
+    setTheme(userTheme.value);
     // const initUserTheme = this.getMediaPreference();
     // document.setTheme(initUserTheme);
     let rects: HoverSnapEl[] = [];
@@ -190,16 +201,19 @@
     <h2
       hs-size="93vw"
       hs-br="30%"
-      :hs-dist="32"
-      class="hover absolute right-10 top-5 py-5 text-black hover:text-white transition-color-500"
+      hs-dist="32"
+      @click="toggleTheme()"
+      :class="{
+        'text-black hover:text-white': userTheme === 'light',
+        dark: userTheme === 'dark',
+      }"
+      class="hover color absolute right-10 top-5 py-5 transition-color-500"
     >
       THEME
     </h2>
     <div class="flex flex-col items-center">
       <h2 hs-size="300px" class="hover load-focus">W.I.P</h2>
-      <p class="text-purple-100 op-50 text-center">
-        Enjoy this small prototype ♥
-      </p>
+      <p class="text-white op-70 text-center">Enjoy this small prototype ♥</p>
     </div>
     <div class="text-center">
       <h2 class="hover">Cursor</h2>
@@ -218,13 +232,39 @@
 <style>
   @import url("https://fonts.cdnfonts.com/css/impact");
   :root {
-    --primary: #6a5674;
-    --opposite: black;
+    --primary: #714b79;
+    --opposite-other: var(--opposite-dark);
+    --opposite-light: linear-gradient(45deg, rgb(17, 0, 13), rgb(18, 0, 22));
+    --opposite: var(--opposite-light);
+    --bg-color: gray;
+    --opposite-dark: linear-gradient(
+      45deg,
+      rgba(129, 89, 146, 0.78),
+      rgba(180, 119, 197, 0.78)
+    );
+    --bg: linear-gradient(
+      45deg,
+      rgba(223, 160, 252, 0.78),
+      rgba(255, 195, 255, 0.78)
+    );
     cursor: none;
+    transition: background 0.5s, color 0.5s;
   }
-  :root.dark-theme {
-    --primary: black;
-    --opposite: #6a5674;
+  :root.dark {
+    --primary: #d7aceb;
+    --opposite: var(--opposite-dark);
+    --opposite-other: var(--opposite-light);
+    --bg-color: black;
+    --bg: linear-gradient(45deg, rgba(10, 0, 8, 0.78), rgba(12, 0, 15, 0.78));
+  }
+  .color {
+    transition: background 0.5s, color 0.5s;
+    color: var(--primary);
+    &:hover {
+      background: var(--opposite-other);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
   }
 
   ::selection {
@@ -233,11 +273,9 @@
   }
 
   body {
-    background: linear-gradient(
-      45deg,
-      rgba(107, 86, 116, 0.78),
-      rgba(157, 132, 164, 0.78)
-    );
+    transition: background 0.5s, background-color 0.5s;
+    background: var(--bg);
+    background-color: var(--bg-color);
   }
 
   .grain {
@@ -250,6 +288,7 @@
 
   h2,
   p {
+    transition: color 0.5s;
     font-family: impact;
     color: var(--primary);
     /* user-select: none; */
@@ -277,7 +316,7 @@
     z-index: -3;
     opacity: 0;
     line-height: 0px;
-    transition: opacity 300ms;
+    transition: opacity 300ms, color 0.5s;
   }
   @keyframes spin {
     from {
@@ -305,7 +344,7 @@
     top: 50vh;
     left: 50%;
     transform: translate(-50%, -50%);
-    background-color: var(--opposite);
+    background: var(--opposite);
     border-radius: 50%;
     overflow: hidden;
     filter: blur(10px);
