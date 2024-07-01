@@ -7,7 +7,6 @@
     watch: true,
   });
 
-  let width = 0;
   type HoverSnapEl = {
     rect: DOMRect;
     size?: string;
@@ -25,7 +24,7 @@
   }
 
   onMounted(async () => {
-    setTheme(userTheme.value);
+    setTheme(userTheme.value || "dark");
 
     let rects: HoverSnapEl[] = [];
     let cursorSmallShown = false;
