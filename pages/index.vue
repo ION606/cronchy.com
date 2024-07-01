@@ -196,7 +196,7 @@
   </div>
   <main
     ref="main"
-    class="flex justify-center flex-col space-y-20 items-center min-h-100vh py-10 opacity-0 transition-opacity-500"
+    class="flex px-10 text-center justify-center flex-col space-y-20 items-center min-h-100vh py-10 opacity-0 transition-opacity-500"
   >
     <h2
       hs-size="93vw"
@@ -213,9 +213,9 @@
     </h2>
     <div class="flex flex-col items-center">
       <h2 hs-size="300px" class="hover load-focus">W.I.P</h2>
-      <p class="text-white op-70 text-center">Enjoy this small prototype ♥</p>
+      <p class="text-white op-70">Enjoy this small prototype ♥</p>
     </div>
-    <div class="text-center">
+    <div>
       <h2 class="hover">Cursor</h2>
       <h2 class="hover">Snaps</h2>
       <h2 class="hover">To</h2>
@@ -223,7 +223,7 @@
       <h2 class="hover">Element</h2>
     </div>
     <h2 class="hover">CURSOR SCALES BASED ON ELEMENT SIZE</h2>
-    <h2 hs-size="110vw" hs-br="0" class="hover">
+    <h2 hs-size="calc(150vw + 150vh)" hs-br="0" class="hover">
       ELEMENTS CAN MODIFY THE CURSOR IN NUMEROUS WAYS
     </h2>
   </main>
@@ -236,7 +236,7 @@
     --opposite-other: var(--opposite-dark);
     --opposite-light: linear-gradient(45deg, rgb(17, 0, 13), rgb(18, 0, 22));
     --opposite: var(--opposite-light);
-    --bg-color: gray;
+    --bg-color: white;
     --opposite-dark: linear-gradient(
       45deg,
       rgba(129, 89, 146, 0.78),
@@ -244,8 +244,8 @@
     );
     --bg: linear-gradient(
       45deg,
-      rgba(223, 160, 252, 0.78),
-      rgba(255, 195, 255, 0.78)
+      rgba(166, 124, 184, 0.78),
+      rgba(234, 182, 248, 0.78)
     );
     cursor: none;
     transition: background 0.5s, color 0.5s;
@@ -294,18 +294,19 @@
     /* user-select: none; */
   }
   h2 {
-    font-size: 1.5rem;
+    font-size: 2rem;
   }
 
   p {
     font-size: 1rem;
   }
 
-  @media (max-width: 1000px) {
+  @media (max-width: 800px) {
     h2 {
-      font-size: 1rem;
+      font-size: 1.5rem;
     }
   }
+ 
 
   #cursorSmall {
     position: absolute;
