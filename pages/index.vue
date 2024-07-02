@@ -35,12 +35,11 @@
     let cursorSmallShown = false;
     let lastMouseX = -1;
     let lastMouseY = -1;
+    let lastHeight: number;
+    let lastWidth: number;
     let size = 300;
-    const radius = 80;
 
-    const loadInterval = setInterval(() => {
-      load();
-    }, 0);
+    load();
 
     setTimeout(() => {
       if (main.value) {
@@ -49,25 +48,29 @@
     }, 300);
 
     updateRects();
-    setInterval(() => {
-      updateRects();
-    }, 1000);
 
+    window.onmousemove = (e) => small(e.pageX, e.pageY);
+    window.ontouchmove = (e) => {
+      const touch = e.touches[0] || e.changedTouches[0];
+      small(touch.pageX, touch.pageY);
+    };
+    let inactiveTimeout: NodeJS.Timeout;
     setTimeout(() => {
-      document.body.onscroll = () => {
-        if (cursor.value) {
-          gsap.to(cursor.value, { height: size, width: size, duration: 0.5 });
-        }
-      };
+      function update() {
+        updateRects();
+        move(lastMouseX, lastMouseY);
+      }
+      window.onscroll = update;
+      window.onresize = update;
 
-      document.body.onmousemove = (e) => move(e.pageX, e.pageY);
-      document.body.ontouchmove = (e) => {
+      window.onmousemove = (e) => move(e.clientX, e.clientY);
+      window.ontouchmove = (e) => {
         const touch = e.touches[0] || e.changedTouches[0];
-        move(touch.pageX, touch.pageY);
+        move(touch.clientX, touch.clientY);
       };
 
       const move = (x: number, y: number) => {
-        clearInterval(loadInterval);
+        clearTimeout(inactiveTimeout);
         lastMouseX = x;
         lastMouseY = y;
         let closestRect = null;
@@ -76,9 +79,9 @@
         for (let e of rects) {
           const { rect, distance } = e;
           const centerX = rect.x + rect.width / 2;
-          const centerY = rect.y + window.scrollY + rect.height / 2;
+          const centerY = rect.y + rect.height / 2;
           const d = getDistance(x, y, centerX, centerY);
-          const radius = distance || 40;
+          const radius = distance || 50;
 
           if (
             x > centerX - radius - rect.width / 2 &&
@@ -122,6 +125,7 @@
         }
 
         moved.value = true;
+        inactiveTimeout = setTimeout(load, 2000);
       };
     }, 1500);
 
@@ -159,7 +163,7 @@
         gsap.to(cursorSmall.value, {
           left: x,
           top: y,
-          duration: 0.5,
+          duration: 0.4,
         });
         cursorSmall.value.style.opacity = "0.8";
         if (!cursorSmallShown) {
@@ -170,8 +174,6 @@
         }
       }
     }
-
-    window.addEventListener("scroll", updateRects);
 
     function getHSEl(el: Element): HoverSnapEl {
       return {
@@ -193,6 +195,20 @@
       rects = newRects;
     }
 
+    function debounce<T extends unknown[], U>(
+      callback: (...args: T) => PromiseLike<U> | U,
+      wait: number
+    ) {
+      let timer: NodeJS.Timeout;
+
+      return (...args: T): Promise<U> => {
+        clearTimeout(timer);
+        return new Promise((resolve) => {
+          timer = setTimeout(() => resolve(callback(...args)), wait);
+        });
+      };
+    }
+
     function getDistance(x1: number, y1: number, x2: number, y2: number) {
       return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
     }
@@ -202,12 +218,14 @@
 <template>
   <div class="grain fixed pointer-events-none"></div>
 
-  <div
-    ref="cursorSmall"
-    id="cursorSmall"
-    class="text-4xl pointer-events-none select-none"
-  >
-    ⋆
+  <div class="fixed w-100% h-100% z-10 pointer-events-none">
+    <div
+      ref="cursorSmall"
+      id="cursorSmall"
+      class="text-4xl pointer-events-none select-none"
+    >
+      ⋆
+    </div>
   </div>
   <div class="fixed w-100% h-100% z--1 pointer-events-none">
     <div ref="cursor" id="cursor"></div>
@@ -221,7 +239,7 @@
       hs-br="30%"
       hs-dist="32"
       @click="toggleTheme()"
-      class="hover color absolute right-10 top-5 my-5 transition-color-500 select-none"
+      class="hover color absolute right-5 top-5 px-5 my-5 transition-color-500 select-none"
     >
       THEME
     </h2>
@@ -323,10 +341,12 @@
     position: absolute;
     transform: translate(-50%, -50%);
     border-radius: 50%;
+    top: -100px;
+    left: 50;
     color: var(--primary);
     filter: blur(1px);
     z-index: 50;
-    opacity: 0;
+    opacity: 1;
     line-height: 0px;
   }
 
