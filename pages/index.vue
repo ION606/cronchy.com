@@ -216,9 +216,9 @@
 </script>
 
 <template>
-  <div class="grain fixed pointer-events-none"></div>
+  <div class="grain fixed size-100% pointer-events-none"></div>
 
-  <div class="fixed w-100% h-100% z-10 pointer-events-none">
+  <div class="fixed size-100% z-10 pointer-events-none">
     <div
       ref="cursorSmall"
       id="cursorSmall"
@@ -227,12 +227,12 @@
       ⋆
     </div>
   </div>
-  <div class="fixed w-100% h-100% z--1 pointer-events-none">
+  <div class="fixed size-100% z--1 pointer-events-none">
     <div ref="cursor" id="cursor"></div>
   </div>
   <main
     ref="main"
-    class="flex px-10 text-center justify-center flex-col space-y-20 items-center min-h-100vh py-10 opacity-0 transition-opacity-500"
+    class="flex px-10 text-center justify-center flex-col space-y-20 items-center min-h-100dvh py-10 opacity-0 transition-opacity-500"
   >
     <h2
       hs-size="93vw"
