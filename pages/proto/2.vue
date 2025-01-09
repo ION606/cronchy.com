@@ -239,24 +239,25 @@
       hs-br="30%"
       hs-dist="32"
       @click="toggleTheme()"
-      class="hover color fixed right-5 top-5 px-5 my-5 transition-color-500 select-none"
+      class="hover color absolute right-5 top-5 px-5 my-5 transition-color-500 select-none"
     >
       THEME
     </h2>
-    <div class="flex flex-col gap-5 load-focus hover items-center">
-      <img
-        src="https://pfp.crun.zip/verycrunchy.com/home"
-        class="min-w-100% w-80vw max-w-70 rounded-full"
-      />
-      <div>
-        <h2 class=" ">veryCrunchy</h2>
-        <p class="text-white op-70">Fullstack Developer</p>
-      </div>
+    <div class="flex flex-col items-center">
+      <h2 hs-size="300px" class="hover load-focus">W.I.P</h2>
+      <p class="text-white op-70">Enjoy this small prototype ♥</p>
     </div>
-
-    <div class="flex flex-col hover items-center">
-      <p class="text-white op-70">W.I.P</p>
+    <div>
+      <h2 class="hover">Cursor</h2>
+      <h2 class="hover">Snaps</h2>
+      <h2 class="hover">To</h2>
+      <h2 class="hover">Closest</h2>
+      <h2 class="hover">Element</h2>
     </div>
+    <h2 class="hover">CURSOR SCALES BASED ON ELEMENT SIZE</h2>
+    <h2 hs-size="calc(100vw + 100vh)" hs-y="50%" hs-br="0" class="hover">
+      ELEMENTS CAN MODIFY THE CURSOR IN NUMEROUS WAYS
+    </h2>
   </main>
 </template>
 
