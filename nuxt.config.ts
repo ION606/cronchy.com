@@ -23,6 +23,7 @@ export default defineNuxtConfig({
     preload: true,
   },
   runtimeConfig: {
+    GITHUB_TOKEN: process.env.GITHUB_TOKEN,
     public: {
       env: process.env.NODE_ENV || "development",
     },
