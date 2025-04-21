@@ -1,0 +1,35 @@
+[
+    {
+        "name": "FortuneFalcon",
+        "oneOff": true,
+        "monthly": false,
+        "commission": false,
+        "lastSupportedDateUTC": "2025-04-10T22:05:00Z",
+        "total": 20.0
+    },
+    {
+        "name": "Jamie/superespresso",
+        "oneOff": true,
+        "monthly": false,
+        "commission": false,
+        "lastSupportedDateUTC": "2024-11-21T04:49:00Z",
+        "total": 15.0
+    },
+    {
+        "name": "Dargy",
+        "oneOff": true,
+        "monthly": false,
+        "commission": false,
+        "lastSupportedDateUTC": "2024-11-25T20:56:00Z",
+        "total": 3.0
+    },
+
+    {
+        "name": "Joerkig",
+        "oneOff": true,
+        "monthly": false,
+        "commission": false,
+        "lastSupportedDateUTC": "2024-07-29T03:35:00Z",
+        "total": 3.0
+    }
+]

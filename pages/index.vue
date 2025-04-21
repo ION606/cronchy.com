@@ -35,8 +35,6 @@
     let cursorSmallShown = false;
     let lastMouseX = -1;
     let lastMouseY = -1;
-    let lastHeight: number;
-    let lastWidth: number;
     let size = 300;
 
     load();
@@ -232,9 +230,9 @@
   </div>
   <main
     ref="main"
-    class="flex px-10 text-center justify-center flex-col space-y-20 items-center min-h-100dvh py-10 opacity-0 transition-opacity-500"
+    class="flex px-10 py30 text-center justify-center flex-col space-y-20 items-center min-h-100dvh py-10 opacity-0 transition-opacity-500"
   >
-    <h2
+    <!-- <h2
       hs-size="93vw"
       hs-br="30%"
       hs-dist="32"
@@ -242,7 +240,7 @@
       class="hover color fixed right-5 top-5 px-5 my-5 transition-color-500 select-none"
     >
       THEME
-    </h2>
+    </h2> -->
     <div class="flex flex-col gap-5 load-focus hover items-center">
       <img
         src="https://pfp.crun.zip/verycrunchy.com/home"
@@ -254,9 +252,8 @@
       </div>
     </div>
 
-    <div class="flex flex-col hover items-center">
-      <p class="text-white op-70">W.I.P</p>
-    </div>
+    <SponsorsList class="hover" hs-dist="100" />
+    <DonationOptions class="hover" hs-dist="100" />
   </main>
 </template>
 
@@ -264,24 +261,30 @@
   @import url("https://fonts.cdnfonts.com/css/impact");
 
   :root {
-    --primary: #d7aceb;
-    --opposite-other: var(--opposite-dark);
-    --opposite: var(--opposite-light);
-    --opposite-light: linear-gradient(45deg, rgba(7, 0, 8), rgba(11, 0, 13));
-    --bg-light: linear-gradient(45deg, rgba(129, 89, 146), rgba(180, 119, 197));
-    --opposite-dark: var(--bg-light);
-    --bg-color: black;
-    cursor: none;
-    transition: background 1.5s, color 1.5s;
+    --primary: #c2a6ff;
+    --opposite-light: -webkit-linear-gradient(
+      135deg,
+      oklch(0.17 0.0251 279.7),
+      oklch(0.25 0.0571 266.71)
+    );
 
+    --opposite: var(--opposite-light);
+
+    --bg-light: linear-gradient(135deg, #6c3b95, #8245b0);
+    --opposite-dark: var(--bg-light);
+    --bg-color: oklch(0.17 0.0251 279.7);
+    cursor: none;
+    transition: background 1s, color 1s;
     --bg: var(--bg-light);
+    --neon-glow: 0 0 15px var(--primary), 0 0 30px var(--primary);
+    --grain-overlay: url(/grain.svg);
   }
 
   :root.dark {
-    --primary: #d7aceb;
+    --primary: #c2a6ff;
     --opposite: var(--opposite-dark);
     --opposite-other: var(--opposite-light);
-    --bg-color: black;
+    --bg-color: #0d0e1a;
     --bg: var(--opposite-light);
   }
 
@@ -290,10 +293,15 @@
     color: var(--primary);
     background: var(--opposite-other);
     background-clip: text;
+    filter: drop-shadow(0 0 15px var(--primary));
+    text-shadow: var(--neon-glow);
   }
 
   .color:hover {
     color: transparent;
+    background: var(--primary);
+    -webkit-background-clip: text;
+    filter: drop-shadow(var(--neon-glow));
   }
 
   ::selection {
@@ -303,25 +311,34 @@
 
   body {
     transition: background 5.5s, background-color 5.5s;
-    background: var(--bg);
     background-color: var(--bg-color);
+    background-blend-mode: overlay;
   }
 
   .grain {
-    background: url(/grain.svg);
-    background-size: 100px 100px;
-    opacity: 0.5;
+    background: var(--grain-overlay);
+    background-size: 150px 150px;
+    opacity: 0.3;
+    mix-blend-mode: soft-light;
     width: 100%;
     height: 100%;
   }
 
+  h1,
   h2,
+  span,
+  h3,
   p {
     transition: color 0.5s;
     font-family: impact;
     color: var(--primary);
+    text-shadow: 0 0 20px rgba(194, 166, 255, 0.2);
   }
-
+  h1,
+  h2 {
+    color: var(--primary);
+    text-shadow: 0 0 15px var(--primary), 0 0 30px var(--primary);
+  }
   h2 {
     font-size: 2rem;
   }
@@ -343,30 +360,29 @@
     top: -100px;
     left: 50;
     color: var(--primary);
-    filter: blur(1px);
+    filter: blur(1px) drop-shadow(var(--neon-glow));
     z-index: 50;
     opacity: 1;
     line-height: 0px;
+    transition: transform 0.1s ease-out;
   }
 
   @keyframes spin {
     from {
-      transform: translate(-50%, -50%) rotate(0deg);
+      transform: translate(-50%, -50%) rotate(0deg) scale(1);
     }
     to {
-      transform: translate(-50%, -50%) rotate(360deg);
+      transform: translate(-50%, -50%) rotate(360deg) scale(1.1);
     }
   }
 
   @keyframes blink {
-    25% {
-      opacity: 0.75;
+    0%,
+    100% {
+      opacity: 0.8;
     }
     50% {
-      opacity: 0.5;
-    }
-    75% {
-      opacity: 0.8;
+      opacity: 0.4;
     }
   }
 
@@ -377,11 +393,21 @@
     top: 50vh;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: var(--opposite);
+    background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
     border-radius: 50%;
     overflow: hidden;
-    filter: blur(10px);
+    filter: blur(100px) brightness(1.2);
+    opacity: 0.5;
     z-index: -5;
-    transition: background 1.5s;
+    transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .hover {
+    transition: transform 0.3s ease, filter 0.3s ease;
+  }
+
+  .hover:hover {
+    transform: scale(1.05);
+    filter: drop-shadow(var(--neon-glow));
   }
 </style>
